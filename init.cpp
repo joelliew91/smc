@@ -5,15 +5,15 @@
 #include <fstream>
 #include <string>
 #include <boost/math/distributions.hpp>
-#include "rnglib.h"
-#include "ranlib.h"
+
 
 using namespace std;
 
-void print(){
-    para* curr = head;
+void print(para* p){
+    para* curr = p;
     while(curr != NULL){
-        cout<<"mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<endl;
+        //cout<<"mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<" w: "<<curr->weight<<" norm_w: "<<curr->norm_weight<<" cum_w: "<<curr->cum_norm_weight<<endl;
+        cout<<"s_v-u3: "<<curr->u3-curr->sigma_v<<" k-u1: "<<curr->k-curr->u1<<" v-u2: "<<curr->v_p-curr->u2<<endl;
         curr = curr->next;
     }
     return ;
@@ -22,12 +22,13 @@ void print(){
 double normal(){
     double s1 = uniform();
     double s2 = uniform();
+    if(s1<0.0000001) s1 += 0.0000001;
     return sqrt(-2*log(s1))*cos(2*M_PI*s2);
 }
 
 
 double uniform(){
-    return rand()%10000/10000.0;
+    return rand()%100000/100000.0;
 }
 
 double rgamma(int alpha){
@@ -41,7 +42,7 @@ double rgamma(int alpha){
 }
 
 
-void initialize(){
+void init(){
     max_v = 10000;
     min_v = 0;
     min_w = 0;
@@ -63,43 +64,46 @@ void initialize(){
     total = 1*price.size(); //check delta*price.size();
     para* temp;
     para* curr;
-    default_random_engine gen(rand());
-    gamma_distribution<double> dist(0.142857, 1.0);
-    gamma_distribution<double> dist1(1.0,1.0);
+
     for(int i=0;i<no_particles;i++){
         temp = new para;
+        temp->norm_weight = 1;
         temp->mu = normal();
         temp->gam = normal();
-        temp->sigma_j = rgamma(1);
-        temp->sigma_v = rgamma(1);
-        temp->v_p = rgamma(1);
-        double a = dist(gen);
-        temp->rho = 2*(ep+a/(a+dist1(gen)))-1;
-        temp->k = uniform()*(0.5*pow(temp->sigma_v,2)/temp->v_p)+pow(temp->sigma_v,2)/temp->v_p*0.5;
+        temp->sigma_j = 1.0/gengam(1.0,0.5);
+        temp->sigma_v = gengam(1.0,1.0);
+        temp->v_p = gengam(1.0,1.0);
+        temp->rho = 2*genbet(0.14285714,1.0)-1+0.000001;
+        temp->k = (uniform()+1)*pow(temp->sigma_v,2)/temp->v_p*0.5;
         temp->weight = 1/no_particles;
         temp->norm_weight = 1/no_particles;
         temp->z = new double[total];
         temp->w = new double[total];
         temp->v_star = new double[total];
         temp->v = new double[total];
+        temp->u1 = pow(temp->sigma_v,2)/(2*temp->v_p);
+        temp->u2 = pow(temp->sigma_v,2)/(2*temp->k);
+        temp->u3 = sqrt(2*temp->k*temp->v_p);
+        //cout<<2*temp->k*temp->v_p/pow(temp->sigma_v,2)<<" "<<temp->k - temp->u1<<" "<<temp->v_p - temp->u2<<" "<<temp->u3-temp->sigma_v<<endl;
         double d = 4*temp->k*temp->v_p/pow(temp->sigma_v,2);
         double lambda;
         for(int j=0;j<total;j++){
             
             if(j==0){
                 temp->z[j] = 1;
-                temp->w[j] = 1;
-                temp->v_star[j] = 1;
+                temp->w[j] = 1/gengam(1.0,0.5);
+                temp->v_star[j] = normal()*0.5/temp->w[j];
                 temp->v[j] = 1;
             }
             else{
-                lambda = 4*temp->k*exp(-temp->k*delta)*temp->v[j-1]/(pow(temp->sigma_v,2)*(1-exp(-temp->k*delta)));
-                boost::math::non_central_chi_squared_distribution<double> chisq(d,lambda);
-                //cout<<ranlib::genchi (d)<<endl;
-                temp->v[j] = 1;
-                temp->z[j] = 1;
-                temp->w[j] = 1;
-                temp->v_star[j] = 1;
+                int flag = 1;
+                lambda = 4*temp->k/(pow(temp->sigma_v,2)*(1-exp(-temp->k*delta)));
+                temp->v[j] = gennch(d,lambda*temp->v[j-1]*exp(-temp->k*delta))/lambda;
+                //cout<<temp->v[j]<<endl;
+                double temp_gamma = gengam(1.0,1.0/delta);
+                temp->z[j] = temp->gam*temp_gamma+temp->sigma_j*sqrt(temp_gamma)*normal();
+                temp->w[j] = 1/gengam(1.0,0.5);
+                temp->v_star[j] = normal()*0.5/temp->w[j];
             }
             
         }

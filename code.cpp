@@ -7,11 +7,10 @@
 #include <complex_bessel.h>
 #include <time.h>
 #include <complex>
-#include "rnglib.h"
-#include "ranlib.h"
+
 
 double TOL = 0.000001;
-double ep = 0.0001;
+double ep = pow(10,-300);
 
 using namespace std;
 
@@ -20,28 +19,65 @@ double max_v;
 double max_w;
 double min_v;
 double min_w;
-int no_particles=100;
+int no_particles=1000;
 double dmax = 2;
 double delta=1;
 vector<double> price;
 int total;
 int flag = 1;
 
+double zeta = 0.005;
+double prev_zeta = 0.000;
+double ESS_k;
+double threshold = 1000.0;
 
 int main(){
     srand(10);
-    initialize();
+    init();
     para* temp = head;
-    //complex<double> a(2800000.0,0.0);
-    //complex<double> t = sp_bessel::besselK(delta/delta-0.5,a);
-    //cout<<t<<endl;
-    //temp = temp->next;temp = temp->next;
-    //cout<<posterior(1,temp)<<endl;
-    //while(temp != NULL){
-     //   cout<<posterior(1,temp)<<endl;
-       // temp = temp->next;
-    //}
-    //print();
-    //cout<<log(-1)<<endl;
-	return(0);
+    while(temp!=NULL){
+        cout<<posterior(0.005,temp)<<endl;;
+        temp = temp->next;
+    }
+    //para* ker = set_kernel();
+    //print(head);
+    /*for(int i =0;i<20;i++){
+        update_para(zeta,ker);
+        cout<<i<<endl;
+    }*/
+    //resample_tester();
+    //resample();
+    /*ESS_k = ESS(zeta,prev_zeta);
+    update_norm_weights();
+    if(ESS_k<threshold)
+        resample();
+     
+        //complex<double> va(700.0,2.0);
+        //cout<<sp_bessel::besselI(0.95,va)<<endl;
+        //temp = temp->next;temp = temp->next;
+        //cout<<posterior(1,temp)<<endl;
+        ////cout<<"done init"<<endl;
+        //for(int i=0;i<14;i++)
+        //   temp = temp->next;
+        //cout<<posterior(1,temp)<<endl;
+    
+    para* temp = head;
+    while(zeta<1.0){
+        temp = head;
+        while(temp != NULL){
+            //update para
+            temp = temp->next;
+        }
+        ESS_k = ESS(zeta,prev_zeta);
+        update_norm_weights();
+        if(ESS_k<1000)
+            resample();
+
+        prev_zeta = zeta;
+        zeta = find_new_zeta(prev_zeta,1.0,prev_zeta,ESS_k);
+        //set kernel
+        cout<<zeta<<endl;
+    }*/
+    
+	return 0;
 }
