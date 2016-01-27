@@ -3,6 +3,62 @@
 
 using namespace std;
 
+void adapt_kernel(para* kernel,para* acc){
+    kernel->mu = kernel->mu*check_mult(acc->mu);
+    kernel->gam = kernel->gam*check_mult(acc->gam);
+    kernel->sigma_j = kernel->sigma_j*check_mult(acc->sigma_j);
+    kernel->rho = kernel->rho*check_mult(acc->rho);
+    kernel->k = kernel->k*check_mult(acc->k);
+    kernel->v_p = kernel->v_p*check_mult(acc->v_p);
+    kernel->sigma_v = kernel->sigma_v*check_mult(acc->sigma_v);
+    for(int i=1;i<total;i++){
+        kernel->z[i] = kernel->z[i]*check_mult(acc->z[i]);
+        kernel->v[i] = kernel->v[i]*check_mult(acc->v[i]);
+    }
+    return ;
+}
+
+double check_mult(double acc_rate){
+    double val = 1.0;
+    if(acc_rate>0.85)
+        val = val*5.0;
+    else
+        if(acc_rate<0.15)
+            val = val/5;
+    return val;
+}
+para* acc_init(){
+    para* acc = new para;
+    acc->mu = 0;
+    acc->gam = 0;
+    acc->sigma_j = 0;
+    acc->rho = 0;
+    acc->k = 0;
+    acc->v_p = 0;
+    acc->sigma_v = 0;
+    acc->v = new double[total];
+    acc->z = new double[total];
+    for(int i=0;i<total;i++){
+        acc->v[i]=0;
+        acc->z[i]=0;
+    }
+    return acc;
+}
+
+void acc_end(para* acc){
+    delete acc->v;
+    delete acc->z;
+    delete acc;
+    return ;
+}
+
+para* reset_kernel(para* ker){
+    delete ker->v;
+    delete ker->z;
+    delete ker;
+    return set_kernel();
+}
+
 para* set_kernel(){
     para* kernel = new para;
     kernel->mu = 0;
@@ -13,13 +69,9 @@ para* set_kernel(){
     kernel->v_p = 0;
     kernel->sigma_v = 0;
     kernel->v = new double[total];
-    kernel->v_star = new double[total];
-    kernel->w = new double[total];
     kernel->z = new double[total];
     for(int i=0;i<total;i++){
         kernel->v[i]=0;
-        kernel->v_star[i] = 0;
-        kernel->w[i] = 0;
         kernel->z[i]=0;
     }
     para* curr = head;
@@ -34,8 +86,6 @@ para* set_kernel(){
         //cout<<kernel->k<<" "<<kernel->v_p<<" "<<kernel->sigma_v<<endl;
         for(int i=0;i<total;i++){
             kernel->v[i] += log(curr->v[i]);
-            kernel->v_star[i] += log(curr->v_star[i]);
-            kernel->w[i] += log(curr->w[i]);
             kernel->z[i] += curr->z[i];
         }
         curr = curr->next;
@@ -53,13 +103,9 @@ para* set_kernel(){
     kernel->v_p = 0;
     kernel->sigma_v = 0;
     kernel->v = new double[total];
-    kernel->v_star = new double[total];
-    kernel->w = new double[total];
     kernel->z = new double[total];
     for(int i=0;i<total;i++){
         kernel->v[i]=0;
-        kernel->v_star[i] = 0;
-        kernel->w[i] = 0;
         kernel->z[i]=0;
     }
 
@@ -74,8 +120,6 @@ para* set_kernel(){
         
         for(int i=0;i<total;i++){
             kernel->v[i] += pow(log(curr->v[i])-m->v[i]/no_particles,2);
-            kernel->v_star[i] += pow(log(curr->v_star[i])-m->v_star[i]/no_particles,2);
-            kernel->w[i] += pow(log(curr->w[i])-m->w[i]/no_particles,2);
             kernel->z[i] += pow(curr->z[i]-m->z[i]/no_particles,2);
         }
         curr = curr->next;
@@ -89,10 +133,10 @@ para* set_kernel(){
     kernel->sigma_v = sqrt(kernel->sigma_v/(no_particles-1));
     for(int i=0;i<total;i++){
         kernel->v[i] = sqrt(kernel->v[i]/(no_particles-1));
-        kernel->v_star[i] = sqrt(kernel->v_star[i]/(no_particles-1));
-        kernel->w[i] = sqrt(kernel->w[i]/(no_particles-1));
         kernel->z[i] = sqrt(kernel->z[i]/(no_particles-1));
     }
+    delete m->v;
+    delete m->z;
     delete m;
     kernel->next = NULL;
 	return kernel;

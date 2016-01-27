@@ -8,13 +8,20 @@
 
 
 using namespace std;
-
+double max(){
+    double v = -100000;
+    for(int i=0;i<price.size();i++)
+        if(v<price[i])
+            v = price[i];
+    return v;
+}
 void print(para* p){
-    para* curr = p;
+    para* curr = p;int i =0;
     while(curr != NULL){
-        //cout<<"mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<" w: "<<curr->weight<<" norm_w: "<<curr->norm_weight<<" cum_w: "<<curr->cum_norm_weight<<endl;
-        cout<<"s_v-u3: "<<curr->u3-curr->sigma_v<<" k-u1: "<<curr->k-curr->u1<<" v-u2: "<<curr->v_p-curr->u2<<endl;
+        cout<<" sum temp post:"<<curr->sum_post<<" posterior:"<<posterior(1.0,curr)<<" mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<" w: "<<curr->weight<<" norm_w: "<<curr->norm_weight<<" cum_w: "<<curr->cum_norm_weight<<" untempered_lik: "<<untempered_lik[i]<<endl;
+        //cout<<"s_v-u3: "<<curr->u3-curr->sigma_v<<" k-u1: "<<curr->k-curr->u1<<" v-u2: "<<curr->v_p-curr->u2<<endl;
         curr = curr->next;
+        i++;
     }
     return ;
 }
@@ -28,7 +35,7 @@ double normal(){
 
 
 double uniform(){
-    return rand()%100000/100000.0;
+    return rand()%10000000/pow(10.0,7)+ep;
 }
 
 double rgamma(int alpha){
@@ -43,11 +50,7 @@ double rgamma(int alpha){
 
 
 void init(){
-    max_v = 10000;
-    min_v = 0;
-    min_w = 0;
-    max_w = 10000;
-    
+
     ifstream myfile("data.csv");
     int count = 0;
     string line;
@@ -64,7 +67,6 @@ void init(){
     total = 1*price.size(); //check delta*price.size();
     para* temp;
     para* curr;
-
     for(int i=0;i<no_particles;i++){
         temp = new para;
         temp->norm_weight = 1;
@@ -75,12 +77,14 @@ void init(){
         temp->v_p = gengam(1.0,1.0);
         temp->rho = 2*genbet(0.14285714,1.0)-1+0.000001;
         temp->k = (uniform()+1)*pow(temp->sigma_v,2)/temp->v_p*0.5;
-        temp->weight = 1/no_particles;
-        temp->norm_weight = 1/no_particles;
+        temp->weight = 0;
+        temp->norm_weight = 0;
+        temp->cum_norm_weight = 0;
         temp->z = new double[total];
-        temp->w = new double[total];
-        temp->v_star = new double[total];
         temp->v = new double[total];
+        temp->posterior = new double[total];
+        temp->post_lik = new double[total];
+        temp->post_z = new double[total];
         temp->u1 = pow(temp->sigma_v,2)/(2*temp->v_p);
         temp->u2 = pow(temp->sigma_v,2)/(2*temp->k);
         temp->u3 = sqrt(2*temp->k*temp->v_p);
@@ -91,25 +95,21 @@ void init(){
             
             if(j==0){
                 temp->z[j] = 1;
-                temp->w[j] = 1/gengam(1.0,0.5);
-                temp->v_star[j] = normal()*0.5/temp->w[j];
                 temp->v[j] = 1;
             }
             else{
                 int flag = 1;
                 lambda = 4*temp->k/(pow(temp->sigma_v,2)*(1-exp(-temp->k*delta)));
-                temp->v[j] = gennch(d,lambda*temp->v[j-1]*exp(-temp->k*delta))/lambda;
+                temp->v[j] = uniform();//gennch(d,lambda*temp->v[j-1]*exp(-temp->k*delta))/lambda;
                 //cout<<temp->v[j]<<endl;
                 double temp_gamma = gengam(1.0,1.0/delta);
                 temp->z[j] = temp->gam*temp_gamma+temp->sigma_j*sqrt(temp_gamma)*normal();
-                temp->w[j] = 1/gengam(1.0,0.5);
-                temp->v_star[j] = normal()*0.5/temp->w[j];
             }
             
         }
-        
         if((0.5*4*temp->k*temp->v_p/pow(temp->sigma_v,2))>dmax) cout<<"out"<<endl;
-        
+
+
         if(head==NULL){
             head = temp;
             curr = head;
@@ -123,3 +123,29 @@ void init(){
     return ;
 }
 
+void init_post(double zeta){
+    double sum;
+    para* p = head;
+    while(p != NULL){
+        sum = 0;
+        for(int j=0;j<total;j++){
+        
+            if(j==0){
+                p->posterior[j] = 0;
+                p->post_z[j] = 0;
+                p->post_lik[j] = 0;
+            }
+            else{
+                p->post_z[j] = variance_gamma(p->z[j],p);
+                p->post_lik[j] = likelihood(zeta,p->z[j],p->v[j],p->v[j-1],price[j],price[j-1],p);
+                p->posterior[j] = p->post_z[j]+p->post_lik[j];
+                sum += p->posterior[j];
+            }
+        }
+        p->sum_post = sum+prior(p);
+        p->weight = exp(p->sum_post - posterior(0.0,p));
+        if(p->weight<ADAPT_WEIGHT) p->weight = 0.0;
+        p = p->next;
+    }
+    return ;
+}

@@ -17,21 +17,19 @@ struct para{
     double norm_weight;
     double cum_norm_weight;
     double* v;
-    double* v_star;
     double* z;
-    double* w;
     double u1;
     double u2;
     double u3;
     para* next;
+    double* posterior;
+    double* post_lik;
+    double* post_z;
+    double sum_post;
 };
 
-extern double max_v;
-extern double max_w;
-extern double min_v;
-extern double min_w;
 extern para* head;
-
+extern double ADAPT_WEIGHT;
 extern std::vector<double> price;
 extern double delta;
 extern double dmax;
@@ -40,50 +38,77 @@ extern int no_particles;
 extern int flag;
 extern double ep;
 extern double TOL;
-
+extern double untempered_lik[2000];
 //init.cpp
+double max();
 void init();
 double normal();
 double uniform();
 void print(para* p);
+void init_post(double zeta);
 //
 //posterior.cpp
+void update_all();
+void print_part_post();
+void update_untempered_lik();
+double lik(double zeta,para* p);
+double mcmc_posterior(double zeta,para* p,double* lat_z,double* lat_lik);
 double prior(para* p);
 double posterior(double zeta,para* p);
-double post_no_prior(double zeta,double z,double vt,double vu,double v_star,double yt,double yu,double w,para* p);
-double likelihood(double zeta,double z,double vt,double vu,double v_star,double yt,double yu,para* p);
+double post_no_prior(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
+double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
 double variance_gamma(double z,para* p);
-double transition(double vt,double vu,para* p);
-double aux_g(double v,double w,double vt,double vu,para* p);
-std::complex<double> phi(double v,double w,double vt,double vu,para* p);
+void print_mat(double** mat, int r,int c);
+double determinant(double** mat);
+void inverse(double** inv,double** mat);
+void swap(double* val1, double* val2);
+void multiply(double** res,double** mat1,double** mat2,int r1,int c1,int r2,int c2);
+double mult(double norm_y,double norm_v,double** mat);
+//double transition(double vt,double vu,para* p);
+//double aux_g(double v,double w,double vt,double vu,para* p);
+//std::complex<double> phi(double v,double w,double vt,double vu,para* p);
 //
 //resample_update.cpp
+double ESS_0();
 double ESS(double zeta,double prev_zeta);
 double find_new_zeta(double prev_zeta,double u_zeta,double l_zeta,double curr_ESS);
-void update_norm_weights();
+void update_norm_weights(para* p);
 void resample();
 void copy_particle(para* new_curr,para* old,int i);
 void destroy(para* p);
-void resample_tester();
+void resample_tester(para* p);
 //
 //kernel.cpp
 para* set_kernel();
+para* acc_init();
+void acc_end(para* acc);
+double check_mult(double acc_rate);
+void adapt_kernel(para* kernel,para* acc);
+para* reset_kernel(para* ker);
 //
 //update_para.cpp
-void update_para(double zeta,para* kernel);
-void update_mu(double zeta,para* curr,double sd);
-void update_gam(double zeta,para* curr,double sd);
-void update_sj(double zeta,para* curr,double sd);
-void update_rho(double zeta,para* curr,double sd);
-void update_k(double zeta,para* curr,double sd);
-void update_vp(double zeta,para* curr,double sd);
-void update_sv(double zeta,para* curr,double sd);
+void update_para(double zeta,para* kernel,para* acc);
+void update_mu(double zeta,para* curr,double sd,para* acc);
+void update_gam(double zeta,para* curr,double sd,para* acc);
+void update_sj(double zeta,para* curr,double sd,para* acc);
+void update_rho(double zeta,para* curr,double sd,para* acc);
+void update_k(double zeta,para* curr,double sd,para* acc);
+void update_vp(double zeta,para* curr,double sd,para* acc);
+void update_sv(double zeta,para* curr,double sd,para* acc);
+void update_lat_z(double zeta,para* curr,para* kernel,para* acc);
+void update_lat_v(double zeta,para* curr,para* kernel,para* acc);
 //
 //bessel.cpp
 double chebev(double a, double b, double c[], int m, double x);
 void beschb(double x, double *gam1, double *gam2, double *gampl, double *gammi);
 double bessik(double x, double xnu);
+//std::complex<double> besselI(double v, std::complex<double> z);
 //
+
+
+
+
+
 //rnglib
 void advance_state ( int k );
 bool antithetic_get ( );

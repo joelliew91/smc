@@ -4,22 +4,18 @@
 #include <random>
 #include <vector>
 #include <chrono>
-#include <complex_bessel.h>
 #include <time.h>
 #include <complex>
 
-
+double ADAPT_WEIGHT = pow(10,-50);
 double TOL = 0.000001;
 double ep = pow(10,-300);
-
+double untempered_lik[2000];
 using namespace std;
 
 para* head = NULL;
-double max_v;
-double max_w;
-double min_v;
-double min_w;
-int no_particles=1000;
+
+int no_particles=2000;
 double dmax = 2;
 double delta=1;
 vector<double> price;
@@ -34,17 +30,78 @@ double threshold = 1000.0;
 int main(){
     srand(10);
     init();
-    para* temp = head;
-    while(temp!=NULL){
-        cout<<posterior(0.005,temp)<<endl;;
-        temp = temp->next;
+    init_post(zeta);
+    update_norm_weights(head);
+    
+    para* p = head;
+    para* kernel;
+    para* acc;
+    
+    ESS_k = ESS_0();
+    
+    if(ESS_k<threshold){
+        cout<<"RESAMPLE!"<<endl;
+        resample();
+        ESS_k = no_particles;
     }
-    //para* ker = set_kernel();
+    
+    kernel = set_kernel();
+    int i = 1;
+    update_untempered_lik();
+    prev_zeta = zeta;
+    //print_part_post();
     //print(head);
-    /*for(int i =0;i<20;i++){
-        update_para(zeta,ker);
+    while(zeta <0.0051){
+        for(int j = 0;j<10;j++){
+            acc = acc_init();
+            cout<<"accept rate init"<<endl;
+            update_para(zeta,kernel,acc);
+            cout<<"update done"<<endl;
+            kernel = reset_kernel(kernel); // inclusive of delete
+            cout<<"delete done"<<endl;
+            adapt_kernel(kernel,acc);
+            cout<<"adapt done"<<endl;
+            acc_end(acc);
+            update_untempered_lik();
+            cout<<"update untempered done"<<endl;
+            cout<<j<<endl;
+        }
+        prev_zeta = zeta;
+        /*cout<<"start new zeta"<<endl;
+        zeta = find_new_zeta(prev_zeta,1.0,prev_zeta,ESS_k);
+        cout<<"zeta found"<<endl;
+        ESS_k = ESS(zeta,prev_zeta);
+        cout<<"ess found"<<endl;
+        
+        if(ESS_k<threshold){
+            cout<<"RESAMPLE!"<<endl;
+            resample();
+            ESS_k = no_particles;
+        }
+        */
+
+         
+
+        cout<<i<<" "<<zeta<<endl;
+        i++;
+        zeta += 1;
+    }
+    update_all();
+    update_untempered_lik();
+    //lik(1.0,head);
+    print(head);
+    /*
+    para* acc;
+    para* kernel = set_kernel();
+    for(int i =0;i<20;i++){
         cout<<i<<endl;
-    }*/
+        acc = acc_init();
+        update_para(zeta,kernel,acc);
+        kernel = reset_kernel(kernel);
+        adapt_kernel(kernel,acc);
+        acc_end(acc);
+    }
+    print(head);*/
     //resample_tester();
     //resample();
     /*ESS_k = ESS(zeta,prev_zeta);
@@ -52,15 +109,6 @@ int main(){
     if(ESS_k<threshold)
         resample();
      
-        //complex<double> va(700.0,2.0);
-        //cout<<sp_bessel::besselI(0.95,va)<<endl;
-        //temp = temp->next;temp = temp->next;
-        //cout<<posterior(1,temp)<<endl;
-        ////cout<<"done init"<<endl;
-        //for(int i=0;i<14;i++)
-        //   temp = temp->next;
-        //cout<<posterior(1,temp)<<endl;
-    
     para* temp = head;
     while(zeta<1.0){
         temp = head;
