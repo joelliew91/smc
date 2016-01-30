@@ -11,16 +11,34 @@ using namespace std;
 
 void update_all(){
     para* p = head;
-    double sum;
+    double sum,val;
+    int count = 1;
     while(p != NULL){
+        cout<<count<<endl;
         sum = 0;
         for(int i=1;i<total;i++){
-            p->post_z[i] = variance_gamma(p->z[i],p);
-            p->post_lik[i] = likelihood(1.0,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
-            p->posterior[i] = p->post_z[i]+p->post_lik[i];
+            val = variance_gamma(p->z[i],p);
+            if(abs(val-p->post_z[i])>TOL){
+                cout<<val<<" wrong z "<<p->post_z[i]<<endl;
+                p->post_z[i] = val;
+            }
+            val = likelihood(1.0,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
+            if(abs(val- p->post_lik[i])>TOL){
+                cout<<val<<" wrong lik "<<p->post_lik[i]<<endl;
+                p->post_lik[i] = val;
+            }
+            val = p->post_z[i]+p->post_lik[i];
+            if(abs(val - p->posterior[i])>TOL){
+                cout<<"id:"<<i<<" corr:"<<val<<" wrong posterior "<<"wrong:"<<p->posterior[i]<<endl;
+                p->posterior[i] = val;
+            }
             sum += p->posterior[i];
         }
-        p->sum_post = sum;
+        if(abs(sum+prior(p)- p->sum_post)>TOL){
+            cout<<sum<<" wrong sum "<<p->sum_post<<endl;
+            p->sum_post = sum;
+        }
+        count++;
         p = p->next;
     }
     return ;
@@ -50,40 +68,50 @@ void update_untempered_lik(){
     
 }
 double prior(para* p){
-    double prior_mu,prior_gam,prior_sigj,prior_rho,prior_com;
-    int I = 1;
+    double prior_mu,prior_gam,prior_sigj,prior_rho,prior_sigv,prior_k,prior_vp,w_v,phi_v;
+    //int I = 1;
     prior_mu = -pow(p->mu,2)/2-log(sqrt(2*PII));
     prior_gam = -pow(p->gam,2)/2-log(sqrt(2*PII));
-    double rhob = (p->rho+1)/2;
-    prior_rho = (1/7-1)*log(rhob)+log(tgamma(1.0+1/7)/tgamma(0.14285714));
-    prior_sigj = log(exp(-p->sigma_j)/tgamma(1.0));
-    double d = 4.0*p->k*p->v_p/pow(p->sigma_v,2);
-    if(0.5*d>dmax || 0.5*d<1)
-        I = 0;
-    prior_com = -p->k+log(I)-p->sigma_v-p->v_p;
-    //cout<<prior_mu<<" "<<prior_gam<<" "<<p->rho<<" "<<prior_rho<<" "<<prior_sigj<<" "<<prior_com<<endl;
-    return prior_mu+prior_gam+prior_rho+prior_sigj+prior_com;
+    phi_v = p->rho*p->sigma_v;
+    w_v = p->sigma_v*p->sigma_v*(1-p->rho*p->rho);
+    prior_rho = log(exp(-0.5/w_v)*pow(w_v,-1.0-1)*pow(0.5,1)/tgamma(1));
+    //double rhob = (p->rho+1)/2;
+    //prior_rho = (1/7-1)*log(rhob)+log(tgamma(1.0+1/7)/tgamma(0.14285714));
+    prior_sigj = log(exp(-5/p->sigma_j)*pow(p->sigma_j,-2.5-1)*pow(5,2.5)*tgamma(2.5));
+    prior_sigv = -pow(phi_v,2)/(2*pow(0.5/w_v,2))-log(sqrt(2*PII*pow(0.5/w_v,2)));
+    prior_k = -pow(p->k,2)/2-log(sqrt(2*PII));
+    prior_vp = -pow(p->v_p,2)/2-log(sqrt(2*PII));
+    //double d = 4.0*p->k*p->v_p/pow(p->sigma_v,2);
+    //cout<<w_v<<" "<<phi_v<<" sigv:"<<p->sigma_v<<" rho:"<<p->rho<<" prior_sigv:"<<prior_sigv<<endl;
+    //cout<<prior_mu+prior_gam+prior_rho+prior_sigv+prior_sigj+prior_k+prior_vp<<endl;
+    //cout<<prior_mu<<" "<<prior_gam<<" "<<prior_rho<<" "<<prior_sigv<<" "<<prior_sigj<<" "<<prior_k<<" "<<prior_vp<<endl;
+    return prior_mu+prior_gam+prior_rho+prior_sigv+prior_sigj+prior_k+prior_vp;
 }
-double mcmc_posterior(double zeta,para* p,double* lat_z,double* lat_lik){
+double mcmc_posterior(para* p,double* lat_z,double* lat_lik,double* lat_posterior){   //untempered posterior
     double val = 0;
     lat_lik[0] = 0;
     lat_z[0] = 0;
+    lat_posterior[0]=0;
     for(int i =1;i<total;i++){
-        lat_lik[i] = likelihood(zeta,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
+        lat_lik[i] = likelihood(1.0,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
         lat_z[i] = variance_gamma(p->z[i],p);
-        val+= lat_z[i]+lat_lik[i];
+        lat_posterior[i] = lat_z[i]+lat_lik[i];
+        val = val+ lat_posterior[i];
     }
-
+    //cout<<"prior1:"<<prior(p)<<endl;
+    //cout<<"mcmc_fn: ";
     return val+prior(p);
 }
 double posterior(double zeta,para* p){
+    //cout<<"posterior_fn: ";
     double val1 = prior(p);
     double sum= 0 ;
     for(int i =1;i<total;i++){
         sum = sum+post_no_prior(zeta,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
-        
     }
+    //cout<<sum<<" "<<val1<<endl;
     //cout<<"prior: "<<val1<<" transition: "<<sum<<endl;
+    //cout<<"prior2m:"<<val1<<endl;
     return val1+sum;
 }
 

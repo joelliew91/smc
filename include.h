@@ -40,19 +40,21 @@ extern double ep;
 extern double TOL;
 extern double untempered_lik[2000];
 //init.cpp
+double min();
 double max();
 void init();
 double normal();
 double uniform();
 void print(para* p);
-void init_post(double zeta);
+void print_extra();
+void init_post();
 //
 //posterior.cpp
 void update_all();
 void print_part_post();
 void update_untempered_lik();
 double lik(double zeta,para* p);
-double mcmc_posterior(double zeta,para* p,double* lat_z,double* lat_lik);
+double mcmc_posterior(para* p,double* lat_z,double* lat_lik,double* lat_posterior);
 double prior(para* p);
 double posterior(double zeta,para* p);
 double post_no_prior(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
@@ -72,11 +74,11 @@ double mult(double norm_y,double norm_v,double** mat);
 double ESS_0();
 double ESS(double zeta,double prev_zeta);
 double find_new_zeta(double prev_zeta,double u_zeta,double l_zeta,double curr_ESS);
-void update_norm_weights(para* p);
+void update_norm_weights(double zeta,double prev_zeta);
 void resample();
-void copy_particle(para* new_curr,para* old,int i);
+void copy_particle(para* new_curr,para* old,int j);
 void destroy(para* p);
-void resample_tester(para* p);
+void resample_tester(para* p,double zeta,double prev_zeta);
 //
 //kernel.cpp
 para* set_kernel();
@@ -87,16 +89,18 @@ void adapt_kernel(para* kernel,para* acc);
 para* reset_kernel(para* ker);
 //
 //update_para.cpp
-void update_para(double zeta,para* kernel,para* acc);
-void update_mu(double zeta,para* curr,double sd,para* acc);
-void update_gam(double zeta,para* curr,double sd,para* acc);
-void update_sj(double zeta,para* curr,double sd,para* acc);
-void update_rho(double zeta,para* curr,double sd,para* acc);
-void update_k(double zeta,para* curr,double sd,para* acc);
-void update_vp(double zeta,para* curr,double sd,para* acc);
-void update_sv(double zeta,para* curr,double sd,para* acc);
-void update_lat_z(double zeta,para* curr,para* kernel,para* acc);
-void update_lat_v(double zeta,para* curr,para* kernel,para* acc);
+void update_para(para* kernel,para* acc);
+void update_mu(para* curr,double sd,para* acc);
+void update_gam(para* curr,double sd,para* acc);
+void update_sj(para* curr,double sd,para* acc);
+void update_rho(para* curr,double sd,para* acc);
+void update_k(para* curr,double sd,para* acc);
+void update_vp(para* curr,double sd,para* acc);
+void update_sv(para* curr,double sd,para* acc);
+void update_lat_z(para* curr,para* kernel,para* acc);
+void update_lat_v(para* curr,para* kernel,para* acc);
+void update_untempered_lik();
+
 //
 //bessel.cpp
 double chebev(double a, double b, double c[], int m, double x);
