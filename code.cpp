@@ -15,7 +15,7 @@ using namespace std;
 
 para* head = NULL;
 
-int no_particles=100;
+int no_particles=1000;
 double dmax = 2;
 double delta=1;
 vector<double> price;
@@ -25,7 +25,7 @@ int flag = 1;
 double zeta = 0.005;
 double prev_zeta = 0.000;
 double ESS_k;
-double threshold = 50.0;
+double threshold = 500.0;
 
 int main(){
 
