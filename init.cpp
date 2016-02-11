@@ -8,6 +8,52 @@
 
 
 using namespace std;
+
+void get_val(para* a){
+    para* p = a;
+    para* curr = new para;
+    curr->mu = 0;
+    curr->gam = 0;
+    curr->sigma_j = 0;
+    curr->rho = 0;
+    curr->k = 0;
+    curr->v_p = 0;
+    curr->sigma_v = 0;
+    
+    double t_w = 0.0;
+    while(p != NULL){
+        t_w += p->weight;
+        curr->mu += p->mu*p->norm_weight;
+        curr->gam += p->gam*p->norm_weight;
+        curr->sigma_j += p->sigma_j*p->norm_weight;
+        curr->rho += p->rho*p->norm_weight;
+        curr->k += p->k*p->norm_weight;
+        curr->v_p += p->v_p*p->norm_weight;
+        curr->sigma_v += p->sigma_v*p->norm_weight;
+        p = p->next;
+    }
+    cout<<"mu:"<<curr->mu<<" gamma:"<<curr->gam<<" sigma_j:"<<curr->sigma_j<<" rho:"<<curr->rho<<" k:"<<curr->k<<" v:"<<curr->v_p<<" sigma_v:"<<curr->sigma_v<<endl;
+}
+
+void print_acc(para* curr){
+    double min1 = 10;double min2 = 10;
+    double max1 = -1;double max2 = -1;
+    for(int i=0;i<total;i++){
+        if(min1>curr->z[i])
+            min1 = curr->z[i];
+        if(max1<curr->z[i])
+            max1 = curr->z[i];
+        
+        if(min2>curr->v[i])
+            min2 = curr->v[i];
+        if(max1<curr->v[i])
+            max2 = curr->v[i];
+        
+    }
+
+    cout<<" mu:"<<curr->mu<<" gam:"<<curr->gam<<" s_j:"<<curr->sigma_j<<" s_v:"<<curr->sigma_v<<" rho:"<<curr->rho<<" k:"<<curr->k<<" v:"<<curr->v_p<<" min z:"<<min1<<" max z:"<<max1<<" min v:"<<min2<<" max v:"<<max2<<endl;
+    return ;
+}
 double min(){
     double v = 100000;
     for(int i=1;i<no_particles;i++)
@@ -33,8 +79,11 @@ void print_extra(){
 void print(para* p){
     para* curr = p;int i =0;
     while(curr != NULL){
-        cout<<" sum temp post:"<<curr->sum_post<<" posterior:"<<posterior(1.0,curr)<<" mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<" w: "<<curr->weight<<" norm_w: "<<curr->norm_weight<<" cum_w: "<<curr->cum_norm_weight<<" untempered_lik: "<<untempered_lik[i]<<endl;
+        cout<<" sum temp post:"<<curr->sum_post<<" mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<" w: "<<curr->weight<<" norm_w: "<<curr->norm_weight<<" cum_w: "<<curr->cum_norm_weight<<" untempered_lik: "<<untempered_lik[i]<<endl;
         //cout<<"s_v-u3: "<<curr->u3-curr->sigma_v<<" k-u1: "<<curr->k-curr->u1<<" v-u2: "<<curr->v_p-curr->u2<<endl;
+        //cout<<" mu: "<<curr->mu<<" gam: "<<curr->gam<<" s_j: "<<curr->sigma_j<<" s_v: "<<curr->sigma_v<<" rho: "<<curr->rho<<" k: "<<curr->k<<" v: "<<curr->v_p<<endl;
+        //if(curr->u3 !=0)
+        //    cout<<"u3 - sv:"<<curr->u3-curr->sigma_v<<endl;
         curr = curr->next;
         i++;
     }
@@ -98,7 +147,7 @@ void init(){
         temp->rho =phi_v/temp->sigma_v;//2*genbet(0.14285714,1.0)-1+0.000001;
 
         
-        temp->k = (uniform()+1)*pow(temp->sigma_v,2)/temp->v_p*0.5;
+        temp->k = (gengam(1.0,0.5)+1.01)*pow(temp->sigma_v,2)/temp->v_p*0.5;
         temp->weight = 0;
         temp->norm_weight = 1;
         temp->cum_norm_weight = 0;
@@ -109,9 +158,13 @@ void init(){
         temp->post_z = new double[total];
         temp->u1 = pow(temp->sigma_v,2)/(2*temp->v_p);
         temp->u2 = pow(temp->sigma_v,2)/(2*temp->k);
-        temp->u3 = sqrt(2*temp->k*temp->v_p);
-        if(2*temp->k*temp->v_p-temp->sigma_v*temp->sigma_v<0)
-            cout<<"mu:"<<temp->mu<<" gam:"<<temp->gam<<" vp:"<<temp->v_p<<" sigj:"<<temp->sigma_j<<" sigv:"<<temp->sigma_v<<" rho:"<<temp->rho<<" k:"<<temp->k<<endl;
+        temp->u3 = 2*temp->k*temp->v_p;
+
+        temp->k = log(temp->k - temp->u1);
+        temp->v_p = log(temp->v_p - temp->u2);
+        temp->sigma_v = log(temp->u3 - temp->sigma_v*temp->sigma_v);
+        //if(2*temp->k*temp->v_p-temp->sigma_v*temp->sigma_v<0)
+          //  cout<<"mu:"<<temp->mu<<" gam:"<<temp->gam<<" vp:"<<temp->v_p<<" sigj:"<<temp->sigma_j<<" sigv:"<<temp->sigma_v<<" rho:"<<temp->rho<<" k:"<<temp->k<<endl;
         double d = 4*temp->k*temp->v_p/pow(temp->sigma_v,2);
         double norm_y;
         for(int j=0;j<total;j++){
@@ -129,7 +182,7 @@ void init(){
             }
             
         }
-        if((0.5*4*temp->k*temp->v_p/pow(temp->sigma_v,2))>dmax) cout<<"out"<<endl;
+        //if((0.5*4*temp->k*temp->v_p/pow(temp->sigma_v,2))>dmax) cout<<"out"<<endl;
 
 
         if(head==NULL){

@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+\usepackage[fleqn]{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\title{Parameter Estimation for Infinite L\'{e}vy Processes via Sequential Monte Carlo}
+\author{Liew Kuang Chen Joel}
+\begin{document}
+\maketitle
+\newpage 
+\section{The Model}
+For the purposes of this paper, we will be focusing on the Stochastic Volatility with Variance Gamma Jumps in Returns (SVVG). The model is as follows:
+
+
+\text{Stochastic Volatility with Variance Gamma Jumps (SVVG):}
+\begin{equation}
+	\begin{aligned}
+		dY_{t} &=\mu dt+\sqrt{V_{t}}[\rho dW_{1t}+\sqrt{1-\rho ^{2}} dW_{2t}] + dZ_{t} &\\
+		dV_{t} &= \kappa (v - V_{t})dt+\sigma _{v}\sqrt{V_{t}}dW_{1t} &\\
+		dZ_{t} &= \gamma dG_{t} + \sigma _{j} \sqrt{dG_{t}}dB_{t}
+	\end{aligned}
+\end{equation}
+Using Euler Discretization, we have the following:
+
+$
+\begin{bmatrix}
+Y_{t+1} - Y_{t}\\
+V_{t+1} - V_{t}
+\end{bmatrix}
+$
+
+
+\section{Sequential Monte Carlo}
+\subsection{Importance Sampling}
+
+\end{document}

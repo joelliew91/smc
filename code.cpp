@@ -15,7 +15,7 @@ using namespace std;
 
 para* head = NULL;
 
-int no_particles=2000;
+int no_particles=100;
 double dmax = 2;
 double delta=1;
 vector<double> price;
@@ -25,9 +25,10 @@ int flag = 1;
 double zeta = 0.005;
 double prev_zeta = 0.000;
 double ESS_k;
-double threshold = 1000.0;
+double threshold = 50.0;
 
 int main(){
+
     srand(10);
     init();
     init_post();
@@ -37,7 +38,7 @@ int main(){
     para* p = head;
     para* kernel;
     para* acc;
-    
+
     ESS_k = ESS_0();
     
 
@@ -48,10 +49,16 @@ int main(){
     }
     
     kernel = set_kernel();
+    //cout<<"kernel: ";
+    //print(kernel);
+    //cout<<"real:";
+    //print(head);
 
     int i = 1;
-    
-    while(zeta <1.0){
+    int flag = 1;
+    while(zeta <=1.00000001){
+        //cout<<"kernel: ";
+        //print(kernel);
         acc = acc_init();
         cout<<"accept rate init"<<endl;
         update_para(kernel,acc);   //untempered_lik updated already
@@ -60,11 +67,22 @@ int main(){
         cout<<"delete done"<<endl;
         adapt_kernel(kernel,acc);
         cout<<"adapt done"<<endl;
+        print_acc(acc);
         acc_end(acc);
         
         prev_zeta = zeta;
         cout<<"start new zeta"<<endl;
-        zeta = find_new_zeta(prev_zeta,1.0,prev_zeta,ESS_k);
+        if(zeta>0.99){
+            zeta = 1.0;
+            if(flag)
+                flag = 0;
+            else{
+                cout<<"done"<<endl;
+            }
+        }
+        else{
+            zeta = find_new_zeta(prev_zeta,1.0,prev_zeta,ESS_k);
+        }
         cout<<"zeta found"<<endl;
         update_norm_weights(zeta,prev_zeta);
         cout<<"weights/norm weights updated"<<endl;
@@ -78,11 +96,14 @@ int main(){
         
 
          
-
+        //zeta = zeta + 1.0;
         cout<<i<<" "<<zeta<<endl;
         print(head);
         i++;
+        if(!flag)
+            break;
     }
+    get_val(head);
     
 	return 0;
 }

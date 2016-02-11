@@ -69,7 +69,14 @@ void update_untempered_lik(){
 }
 double prior(para* p){
     double prior_mu,prior_gam,prior_sigj,prior_rho,prior_sigv,prior_k,prior_vp,w_v,phi_v;
-    //int I = 1;
+    
+    double y1 = p->k;
+    double y2 = p->v_p;
+    double y3 = p->sigma_v;
+    p->k = 0.5*exp(y3)/exp(y1);
+    p->v_p = 0.5*exp(y3)/exp(y2);
+    p->sigma_v = sqrt(2*p->k*p->v_p-exp(y3));
+    
     prior_mu = -pow(p->mu,2)/2-log(sqrt(2*PII));
     prior_gam = -pow(p->gam,2)/2-log(sqrt(2*PII));
     phi_v = p->rho*p->sigma_v;
@@ -81,10 +88,10 @@ double prior(para* p){
     prior_sigv = -pow(phi_v,2)/(2*pow(0.5/w_v,2))-log(sqrt(2*PII*pow(0.5/w_v,2)));
     prior_k = -pow(p->k,2)/2-log(sqrt(2*PII));
     prior_vp = -pow(p->v_p,2)/2-log(sqrt(2*PII));
-    //double d = 4.0*p->k*p->v_p/pow(p->sigma_v,2);
-    //cout<<w_v<<" "<<phi_v<<" sigv:"<<p->sigma_v<<" rho:"<<p->rho<<" prior_sigv:"<<prior_sigv<<endl;
-    //cout<<prior_mu+prior_gam+prior_rho+prior_sigv+prior_sigj+prior_k+prior_vp<<endl;
-    //cout<<prior_mu<<" "<<prior_gam<<" "<<prior_rho<<" "<<prior_sigv<<" "<<prior_sigj<<" "<<prior_k<<" "<<prior_vp<<endl;
+    p->k = y1;
+    p->v_p = y2;
+    p->sigma_v = y3;
+
     return prior_mu+prior_gam+prior_rho+prior_sigv+prior_sigj+prior_k+prior_vp;
 }
 double mcmc_posterior(para* p,double* lat_z,double* lat_lik,double* lat_posterior){   //untempered posterior
@@ -92,26 +99,28 @@ double mcmc_posterior(para* p,double* lat_z,double* lat_lik,double* lat_posterio
     lat_lik[0] = 0;
     lat_z[0] = 0;
     lat_posterior[0]=0;
+
     for(int i =1;i<total;i++){
         lat_lik[i] = likelihood(1.0,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
         lat_z[i] = variance_gamma(p->z[i],p);
         lat_posterior[i] = lat_z[i]+lat_lik[i];
         val = val+ lat_posterior[i];
+
+        //if(lat_lik[i] != lat_lik[i])
+          //  cout<<"lik "<<i<<endl;
     }
-    //cout<<"prior1:"<<prior(p)<<endl;
-    //cout<<"mcmc_fn: ";
+
     return val+prior(p);
 }
 double posterior(double zeta,para* p){
-    //cout<<"posterior_fn: ";
+
     double val1 = prior(p);
     double sum= 0 ;
     for(int i =1;i<total;i++){
         sum = sum+post_no_prior(zeta,p->z[i],p->v[i],p->v[i-1],price[i],price[i-1],p);
     }
-    //cout<<sum<<" "<<val1<<endl;
-    //cout<<"prior: "<<val1<<" transition: "<<sum<<endl;
-    //cout<<"prior2m:"<<val1<<endl;
+
+    
     return val1+sum;
 }
 
@@ -134,6 +143,13 @@ double lik(double zeta,para* p){
     return sum*zeta;
 }
 double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,para* p){
+    double y1 = p->k;
+    double y2 = p->v_p;
+    double y3 = p->sigma_v;
+    p->k = 0.5*exp(y3)/exp(y1);
+    p->v_p = 0.5*exp(y3)/exp(y2);
+    p->sigma_v = sqrt(2*p->k*p->v_p-exp(y3));
+    /*
     double** cov;double** inv;
     cov = new double*[2];
     inv = new double*[2];
@@ -146,19 +162,24 @@ double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,p
     cov[1][0] = cov[0][1];
     cov[1][1] = cov[0][0]*pow(p->sigma_v,2);
     inverse(inv,cov);
-
+     */
     double var = (1-pow(p->rho,2))*vu*delta;
-    double norm_v = (vt-(vu-p->k*(p->v_p-vu)*delta))/sqrt(vu*delta);
+    double norm_v = (vt-(vu+p->k*(p->v_p-vu)*delta))/sqrt(vu*delta);
     double norm_y = (yt-(yu + p->mu*delta + z))/(p->sigma_v*sqrt(vu*delta));
     double val = -0.5*(norm_y*norm_y+norm_v*norm_v-2*p->rho*norm_v*norm_y)/(1-p->rho*p->rho)+log(1/(sqrt(2*PII*(1-p->rho*p->rho))*p->sigma_v*vu));
     //cout<<-0.5*(norm_y*norm_y+norm_v*norm_v-2*p->rho*norm_v*norm_y)/(1-p->rho*p->rho)<<" "<<log(1/(sqrt(2*PII*(1-p->rho*p->rho))*p->sigma_v*vu))<<endl;
     //double val = -0.5*mult(yt-mn_y,vt-mn_v,inv)+log(1/sqrt(determinant(cov)*2*PII));cout<<determinant(cov)<<endl;
     //cout<<-log(sqrt(determinant(cov)*2*PII))<<" "<<-0.5*mult(yt-mn_y,vt-mn_v,inv)<<" "<<val<<endl;
-    for(int i=0;i<2;i++){
+    /*for(int i=0;i<2;i++){
         delete cov[i];
         delete inv[i];
     }
-    delete cov;delete inv;
+    delete cov;delete inv;*/
+    
+    p->k = y1;
+    p->v_p = y2;
+    p->sigma_v = y3;
+    
     return val*zeta;
 }
 

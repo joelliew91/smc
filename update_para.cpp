@@ -5,12 +5,8 @@ using namespace std;
 
 void update_para(para* kernel,para* acc){
     para* temp = head;
-    double sum_prev = 0;
-    double sum_after = 0;
     int count = 1;
     while(temp != NULL){
-        cout<<count<<endl;
-        sum_prev += temp->sum_post;
         update_mu(temp,kernel->mu,acc);
         //cout<<"mu"<<endl;
         update_gam(temp,kernel->gam,acc);
@@ -18,28 +14,20 @@ void update_para(para* kernel,para* acc){
         update_sj(temp,kernel->sigma_j,acc);
         //cout<<"sj"<<endl;
         update_rho(temp,kernel->rho,acc);
-        //cout<<"rho"<<endl;
+        //cout<<"rho"<<endl;*/
         update_k(temp,kernel->k,acc);
         //cout<<"k"<<endl;
         update_vp(temp,kernel->v_p,acc);
         //cout<<"vp"<<endl;
         update_sv(temp,kernel->sigma_v,acc);
-
         //update s_v
         update_lat_z(temp,kernel,acc);
         update_lat_v(temp,kernel,acc);
         update_untempered_lik();
-        //update lat_v
-        //update lat_vs
-        //update lat_z
-        //update lat_w
-        //cout<<temp->k-temp->u1<<" "<<temp->v_p - temp->u2<<" "<<temp->u3-temp->sigma_v<<endl;
-        //cout<<temp->mu<<" "<<temp->gam<<" "<<temp->sigma_j<<" "<<temp->rho<<" "<<temp->k<<" "<<temp->v_p<<endl;
-        sum_after += temp->sum_post;
         temp = temp->next;
+        cout<<count<<endl;
         count++;
     }
-    //cout<<"prev:"<<sum_prev<<" after:"<<sum_after<<endl;
     return ;
 }
 
@@ -112,17 +100,36 @@ void update_sv(para* curr,double sd,para* acc){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
     double* new_posterior = new double[total];
-    
-    double old_post = curr->sum_post+curr->sigma_v;
+    double old_post = curr->sum_post+log(0.5*exp(curr->sigma_v)/sqrt(2*0.5*exp(curr->sigma_v)/exp(curr->k)*0.5*exp(curr->sigma_v)/exp(curr->v_p)-exp(curr->sigma_v)));
     double temp = curr->sigma_v;
-    curr->sigma_v = exp(log(curr->sigma_v/(curr->u3-curr->sigma_v)) + normal()*sd);
-    curr->u3 = sqrt(2*curr->k*curr->v_p);
-    curr->sigma_v = curr->sigma_v*curr->u3/(curr->sigma_v+1);
+
+    //curr->sigma_v = exp(log(curr->sigma_v/(curr->u3-curr->sigma_v)) + normal()*sd);
+    //curr->u3 = sqrt(2*curr->k*curr->v_p);
+    //curr->sigma_v = curr->u3+curr->u3/(curr->sigma_v-1);
+    //curr->u3 = sqrt(2*curr->k*curr->v_p);
+    curr->sigma_v = curr->sigma_v + normal()*sd;
+    //cout<<"temp:"<<temp<<" "<<curr->sigma_v/(curr->u3-curr->sigma_v)<<" "<<curr->u3<<" "<<sd<<endl;
+
     double new_post = mcmc_posterior(curr,new_post_z,new_post_lik,new_posterior);
-    double R = new_post - old_post+curr->sigma_v;
+    //cout<<"new post:"<<new_post<<endl;
+    double R = new_post - old_post+log(0.5*exp(curr->sigma_v)/sqrt(2*0.5*exp(curr->sigma_v)/exp(curr->k)*0.5*exp(curr->sigma_v)/exp(curr->v_p)-exp(curr->sigma_v)));
+
     double u = uniform();
-    //cout<<"R:"<<R<<endl;
+    
+   /* double y1 = curr->k;
+    double y2 = curr->v_p;
+    double y3 = curr->sigma_v;
+    curr->k = 0.5*exp(y3)/exp(y1);
+    curr->v_p = 0.5*exp(y3)/exp(y2);
+    curr->sigma_v = sqrt(2*curr->k*curr->v_p-exp(y3));
+    cout<<"k:"<<curr->k<<" vp:"<<curr->v_p<<" sv:"<<curr->sigma_v<<" "<<R<<endl;
+    curr->k = y1;
+    curr->v_p = y2;
+    curr->sigma_v = y3;
+    
+    cout<<new_post<<" "<<log(0.5*exp(curr->sigma_v)/sqrt(2*0.5*exp(curr->sigma_v)/exp(curr->k)*0.5*exp(curr->sigma_v)/exp(curr->v_p)-exp(curr->sigma_v)))<<endl;*/
     if(exp(R)>u){
+        //cout<<"accepted sv"<<endl;
         curr->sum_post = new_post;
         delete curr->post_z;
         delete curr->post_lik;
@@ -130,13 +137,10 @@ void update_sv(para* curr,double sd,para* acc){
         curr->post_z = new_post_z;
         curr->post_lik = new_post_lik;
         curr->posterior = new_posterior;
+        //curr->u1 = 0.5*curr->sigma_v*curr->sigma_v/curr->v_p;
+        //curr->u2 = 0.5*curr->sigma_v*curr->sigma_v/curr->k;
         //cout<<"R:"<<R<<" :"<<old_post<<" new_post"<<new_post<<endl;
-        /*
-        for(int i=0;i<total;i++){
-            curr->post_z[i] = new_post_z[i];
-            curr->post_lik[i] = new_post_lik[i];
-            curr->posterior[i] = curr->post_z[i]+curr->post_lik[i];
-        }*/
+        //cout<<curr->u3-curr->sigma_v<<endl;
         acc->sigma_v += 1.0;
     }
     else{
@@ -144,6 +148,7 @@ void update_sv(para* curr,double sd,para* acc){
         delete new_post_lik;
         delete new_post_z;
         delete new_posterior;
+        //cout<<curr->u3-curr->sigma_v<<endl;
     }
 
     
@@ -154,16 +159,17 @@ void update_vp(para* curr,double sd,para* acc){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
     double* new_posterior = new double[total];
-    double old_post = curr->sum_post+curr->v_p;
+    double old_post = curr->sum_post+exp(curr->v_p);
     double temp = curr->v_p;
-    curr->v_p = exp(log(curr->v_p-curr->u2) + normal()*sd);
-    curr->u2 = pow(curr->sigma_v,2)/(2*curr->k);
-    curr->v_p += curr->u2;
+    curr->v_p = curr->v_p + normal()*sd;
+
     double new_post = mcmc_posterior(curr,new_post_z,new_post_lik,new_posterior);
-    double R = new_post - old_post +curr->v_p;
+    double R = new_post - old_post +exp(curr->v_p);
+    //cout<<"new post:"<<new_post<<endl;
     double u = uniform();
-    //cout<<"R:"<<R<<endl;
+    //cout<<"R:"<<R<<" log u:"<<u<<endl;
     if(exp(R)>u){
+        //cout<<"acc v"<<endl;
         curr->sum_post = new_post;
         delete curr->post_z;
         delete curr->post_lik;
@@ -171,6 +177,8 @@ void update_vp(para* curr,double sd,para* acc){
         curr->post_z = new_post_z;
         curr->post_lik = new_post_lik;
         curr->posterior = new_posterior;
+        //curr->u1 = 0.5*curr->sigma_v*curr->sigma_v/curr->v_p;
+        //curr->u3 = sqrt(2*curr->v_p*curr->k);
         //cout<<"R:"<<R<<" :"<<old_post<<" new_post"<<new_post<<endl;
         /*
         for(int i=0;i<total;i++){
@@ -196,16 +204,18 @@ void update_k(para* curr,double sd,para* acc){
     double* new_post_z = new double[total];
     double* new_posterior = new double[total];
     
-    double old_post = curr->sum_post+curr->k;
+    double old_post = curr->sum_post+exp(curr->k);
     double temp = curr->k;
-    curr->k = exp(log(curr->k-curr->u1) + normal()*sd);
-    curr->u1 = pow(curr->sigma_v,2)/(2*curr->v_p);
-    curr->k += curr->u1;
+    curr->k = curr->k + normal()*sd;
+    //curr->u1 = pow(curr->sigma_v,2)/(2*curr->v_p);
+
     double new_post = mcmc_posterior(curr,new_post_z,new_post_lik,new_posterior);
-    double R = new_post - old_post+curr->k;
+    double R = new_post - old_post+exp(curr->k);
+    //cout<<"new post:"<<new_post<<endl;
     double u = uniform();
-    //cout<<"R:"<<R<<endl;
+    //cout<<"R:"<<R<<" log u:"<<u<<endl;
     if(exp(R)>u){
+        //cout<<"acc k"<<endl;
         curr->sum_post = new_post;
         delete curr->post_z;
         delete curr->post_lik;
@@ -213,6 +223,8 @@ void update_k(para* curr,double sd,para* acc){
         curr->post_z = new_post_z;
         curr->post_lik = new_post_lik;
         curr->posterior = new_posterior;
+        //curr->u2 = 0.5*curr->sigma_v*curr->sigma_v/curr->k;
+        //curr->u3 = sqrt(2*curr->v_p*curr->k);
         // cout<<"R:"<<R<<" :"<<old_post<<" new_post"<<new_post<<endl;
         /*for(int i=0;i<total;i++){
             curr->post_z[i] = new_post_z[i];

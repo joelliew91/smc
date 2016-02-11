@@ -20,11 +20,14 @@ void adapt_kernel(para* kernel,para* acc){
 
 double check_mult(double acc_rate){
     double val = 1.0;
-    if(acc_rate>0.85)
+    if((acc_rate/no_particles)>0.85)
         val = val*5.0;
-    else
-        if(acc_rate<0.15)
+    else{
+        if((acc_rate/no_particles)<0.15)
             val = val/5;
+        if(val==0)
+            val = 0.0001;
+    }
     return val;
 }
 para* acc_init(){
@@ -68,8 +71,12 @@ para* set_kernel(){
     kernel->k = 0;
     kernel->v_p = 0;
     kernel->sigma_v = 0;
+    kernel->u1 = 0;
+    kernel->u2 = 0;
+    kernel->u3 = 0;
     kernel->v = new double[total];
     kernel->z = new double[total];
+    kernel->next = NULL;
     for(int i=0;i<total;i++){
         kernel->v[i]=0;
         kernel->z[i]=0;
@@ -80,10 +87,11 @@ para* set_kernel(){
         kernel->gam += curr->gam;
         kernel->sigma_j += log(curr->sigma_j);
         kernel->rho += log((1+curr->rho)/(1-curr->rho));
-        kernel->k += log(curr->k - curr->u1);
-        kernel->v_p += log(curr->v_p - curr->u2);
-        kernel->sigma_v += log(curr->sigma_v/(curr->u3 - curr->sigma_v));
-        //cout<<kernel->k<<" "<<kernel->v_p<<" "<<kernel->sigma_v<<endl;
+        kernel->k += curr->k;
+        kernel->v_p += curr->v_p;
+        //kernel->sigma_v += log(curr->sigma_v/(curr->u3 - curr->sigma_v));
+        kernel->sigma_v += curr->sigma_v;
+        //cout<<curr->k - curr->u1<<" "<<curr->v_p - curr->u2<<" "<<(curr->u3 - curr->sigma_v)<<endl;
         for(int i=0;i<total;i++){
             kernel->v[i] += log(curr->v[i]);
             kernel->z[i] += curr->z[i];
@@ -114,9 +122,9 @@ para* set_kernel(){
         kernel->gam += pow(curr->gam - m->gam/no_particles,2);
         kernel->sigma_j += pow(log(curr->sigma_j) - m->sigma_j/no_particles,2);
         kernel->rho += pow(log((1+curr->rho)/(1-curr->rho)) - m->rho/no_particles,2);
-        kernel->k += pow(log(curr->k-curr->u1) - m->k/no_particles,2);
-        kernel->v_p += pow(log(curr->v_p-curr->u2) - m->v_p,2);
-        kernel->sigma_v += pow(log(curr->sigma_v/(curr->u3-curr->sigma_v)) - m->sigma_v,2);
+        kernel->k += pow(curr->k - m->k/no_particles,2);
+        kernel->v_p += pow(curr->v_p - m->v_p,2);
+        kernel->sigma_v += pow(curr->sigma_v - m->sigma_v,2);
         
         for(int i=0;i<total;i++){
             kernel->v[i] += pow(log(curr->v[i])-m->v[i]/no_particles,2);

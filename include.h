@@ -39,7 +39,9 @@ extern int flag;
 extern double ep;
 extern double TOL;
 extern double untempered_lik[2000];
+
 //init.cpp
+void print_acc(para* acc);
 double min();
 double max();
 void init();
@@ -48,6 +50,7 @@ double uniform();
 void print(para* p);
 void print_extra();
 void init_post();
+void get_val(para* p);
 //
 //posterior.cpp
 void update_all();
