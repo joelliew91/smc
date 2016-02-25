@@ -1,2 +1,2 @@
 all:
-	g++ -lcomplex_bessel bessel.cpp kernel.cpp update_para.cpp resample_update.cpp posterior.cpp init.cpp code.cpp ranlib.cpp
+	g++ update_para.cpp kernel.cpp resample_update.cpp posterior.cpp init.cpp bessel.cpp code.cpp ranlib.cpp

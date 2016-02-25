@@ -18,57 +18,57 @@ struct para{
     double cum_norm_weight;
     double* v;
     double* z;
-    double u1;
-    double u2;
-    double u3;
-    para* next;
+
     double* posterior;
     double* post_lik;
     double* post_z;
+    double sum_lik;
     double sum_post;
+    para* next;
 };
 
 extern para* head;
-extern double ADAPT_WEIGHT;
+extern para* kernel;
+extern para* acc;
+
 extern std::vector<double> price;
 extern double delta;
 extern double dmax;
 extern int total;
 extern int no_particles;
-extern int flag;
 extern double ep;
 extern double TOL;
-extern double untempered_lik[2000];
-
+extern int file;
 //init.cpp
-void print_acc(para* acc);
-double min();
-double max();
+void print_acc(para* curr);
+//double min();
+//double max();
 void init();
 double normal();
 double uniform();
-void print(para* p);
-void print_extra();
+void print();
+//void print_extra();
 void init_post();
-void get_val(para* p);
+//void get_val(para* p);
 //
+
 //posterior.cpp
 void update_all();
-void print_part_post();
-void update_untempered_lik();
-double lik(double zeta,para* p);
-double mcmc_posterior(para* p,double* lat_z,double* lat_lik,double* lat_posterior);
-double prior(para* p);
-double posterior(double zeta,para* p);
-double post_no_prior(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
-double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
-double variance_gamma(double z,para* p);
-void print_mat(double** mat, int r,int c);
-double determinant(double** mat);
-void inverse(double** inv,double** mat);
-void swap(double* val1, double* val2);
-void multiply(double** res,double** mat1,double** mat2,int r1,int c1,int r2,int c2);
-double mult(double norm_y,double norm_v,double** mat);
+//void print_part_post();
+//void update_untempered_lik();
+double lik(double zeta,para p);
+double mcmc_posterior(para p,double* lat_z,double* lat_lik,double* lat_posterior,double* sum_lik);
+double prior(para p);
+//double posterior(double zeta,para* p);
+//double post_no_prior(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
+double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,para p);
+double variance_gamma(double z,para p);
+//void print_mat(double** mat, int r,int c);
+//double determinant(double** mat);
+//void inverse(double** inv,double** mat);
+//void swap(double* val1, double* val2);
+//void multiply(double** res,double** mat1,double** mat2,int r1,int c1,int r2,int c2);
+//double mult(double norm_y,double norm_v,double** mat);
 //double transition(double vt,double vu,para* p);
 //double aux_g(double v,double w,double vt,double vu,para* p);
 //std::complex<double> phi(double v,double w,double vt,double vu,para* p);
@@ -79,30 +79,30 @@ double ESS(double zeta,double prev_zeta);
 double find_new_zeta(double prev_zeta,double u_zeta,double l_zeta,double curr_ESS);
 void update_norm_weights(double zeta,double prev_zeta);
 void resample();
-void copy_particle(para* new_curr,para* old,int j);
+void copy_particle(para* new_curr,para old,int j);
 void destroy(para* p);
-void resample_tester(para* p,double zeta,double prev_zeta);
+//void resample_tester(para* p,double zeta,double prev_zeta);
 //
 //kernel.cpp
-para* set_kernel();
-para* acc_init();
-void acc_end(para* acc);
+void print_kernel(para* ker);
+void set_kernel();
+void acc_init();
+//void acc_end(para* acc);
 double check_mult(double acc_rate);
-void adapt_kernel(para* kernel,para* acc);
-para* reset_kernel(para* ker);
+void adapt_kernel();
+//para* reset_kernel(para* ker);
 //
 //update_para.cpp
-void update_para(para* kernel,para* acc);
-void update_mu(para* curr,double sd,para* acc);
-void update_gam(para* curr,double sd,para* acc);
-void update_sj(para* curr,double sd,para* acc);
-void update_rho(para* curr,double sd,para* acc);
-void update_k(para* curr,double sd,para* acc);
-void update_vp(para* curr,double sd,para* acc);
-void update_sv(para* curr,double sd,para* acc);
-void update_lat_z(para* curr,para* kernel,para* acc);
-void update_lat_v(para* curr,para* kernel,para* acc);
-void update_untempered_lik();
+void update_para(double zeta);
+void update_mu(para* curr,double sd,para* acc,int i,double zeta);
+void update_gam(para* curr,double sd,para* acc,int i,double zeta);
+void update_sj(para* curr,double sd,para* acc,int i,double zeta);
+void update_rho(para* curr,double sd,para* acc,int i,double zeta);
+void update_k(para* curr,double sd,para* acc,int i,double zeta);
+void update_vp(para* curr,double sd,para* acc,int i ,double zeta);
+void update_sv(para* curr,double sd,para* acc,int i,double zeta);
+void update_lat_z(para* curr,para* kernel,para* acc,int j);
+void update_lat_v(para* curr,para* kernel,para* acc,int j);
 
 //
 //bessel.cpp

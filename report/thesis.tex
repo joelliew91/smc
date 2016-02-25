@@ -1,36 +1,290 @@
 \documentclass[11pt]{article}
 \usepackage[fleqn]{amsmath}
+\usepackage[document]{ragged2e}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{textcomp}
+\doublespacing
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+
 
 \title{Parameter Estimation for Infinite L\'{e}vy Processes via Sequential Monte Carlo}
 \author{Liew Kuang Chen Joel}
 \begin{document}
 \maketitle
 \newpage 
-\section{The Model}
+\section*{Acknowledgements}
+\newpage
+\section*{Abstract}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\section{Preliminaries}
+
+\subsection{The L\'{e}vy Process}
+In this paper, we will be using the Variance Gamma model from the family of Infinite Activity L\'{e}vy Processes. For the uninitiated, we will first go through the basics.
+\theoremstyle{definition}
+\begin{definition}{L\'{e}vy Process}\\
+A L\'{e}vy Process, $X_{t}$, is a cadlag stochastic process on $(\Omega,\mathcal{F}_{t},P)$,with $X_{0}=0$ and has the following properties:\\
+1. Independent increments: $X_{t+j+1} - X_{t+j} \perp X_{t+k+1} - X_{t+k}, \forall k,j \ge 0 , k \neq j$\\
+2. Stationary increments: The Law of $X_{t+h} - X_{t}$ does not change for any $t$.\\
+3. Stochastic continuity: For any $\epsilon>0, \lim_{h\rightarrow 0} P(|X_{t+h}-X_{t}|>\epsilon) = 0$
+\end{definition}
+\justify The L\'{e}vy Process also satisfies the Infinite Divisibility property.
+\begin{definition}{Infinite Divisibility} \\
+For $n\ge 2$, a probability distribution F is infinitely divisibile if there exists $n$ i.i.d. random variables $Y_{1},Y_{2},...$ such that $\sum_{i=1}^{n} Y_{i}$ has distribution F.
+\end{definition}
+\justify One common distribution satisfying the infinite divisibility condition is the Normal Distribution. If $X \sim N(\mu,\sigma^{2})$, then $X = \sum_{i=1}^{n} Y_{i}$,where $Y_{i} \sim N(\frac{\mu}{n},\frac{\sigma^{2}}{n})$.
+
+\justify Due to fact that L\'{e}vy Processes are semimartingales and that their increments are independent, the process is Markovian and therefore in line with the Efficient Market Hypothesis. Hence, such processes are suitable to model asset prices (Li 2006). 
+\subsubsection{Infinite Activity Processes - Variance Gamma}
+The probability densities of most L\'{e}vy processese are known in closed forms. However, their characteristics functions $\phi_{X_{t}}(u)$ is as follows:
+\begin{center}
+$
+\phi_{X_{t}}(u) = E[\exp^{iuX_{t}}] = \exp^{-t\psi_{x}(u)},t\ge 0
+$
+\end{center}
+
+
+\justify where $\psi_{x}(u)$ is the characteristic exponent of $X$ (Tankov) and satisfies the follow L\'{e}vy-Khintchine formula
+\begin{center}
+$\psi_{x}\equiv -i\mu u + \frac{\sigma^{2}u^{2}}{2} + \int_{R_{0}} (1-\exp^{iux}+iux1_{|x|<1})\pi (dx) $\\
+where $R_{0} = R$ \textbackslash $\{0\}$ and $\pi$ is a $R_{0}$ Radon measure and \\
+$\int_{R_{0}} |x|^{2} \pi (dx)< \infty \qquad \int_{R_{0}} \pi (dx) < \infty$
+\end{center}
+
+Unlike the Finite Activity models (such as the Merton Jump Model) under the family of L\'{e}vy Processes, the infinite-activity models allow infinite jumps within a finite time interval. Hence,
+\begin{center}
+$\int_{R_{0}} \pi (dx) \not< \infty$
+\end{center}
+
+Within the category of Infinite Activity L\'{e}vy Processes, the jump process can have either finite or infinite variation. In the case of the finite/infinite variation, the sum of the absolute distance is finite/infinite over any finite time interval. For this paper, we will only be focussing on the Variance Gamma Process - a member from the Infinite Activity with Finite Variation. This process,$Z_{t}$ is created using a Brownian Motion, with drift $\gamma$ and variance $\sigma_{j}^2$, subordinated by an independent gamma process, $G_{t}$, with parameter $\alpha$.
+\begin{center}
+$G_{t+t_{0}} - G_{t} \sim Ga(\frac{t}{\alpha},\frac{1}{\alpha})$
+\end{center}
+
+
+
+\subsection{The Model}
 For the purposes of this paper, we will be focusing on the Stochastic Volatility with Variance Gamma Jumps in Returns (SVVG). The model is as follows:
 
-
-\text{Stochastic Volatility with Variance Gamma Jumps (SVVG):}
 \begin{equation}
 	\begin{aligned}
-		dY_{t} &=\mu dt+\sqrt{V_{t}}[\rho dW_{1t}+\sqrt{1-\rho ^{2}} dW_{2t}] + dZ_{t} &\\
-		dV_{t} &= \kappa (v - V_{t})dt+\sigma _{v}\sqrt{V_{t}}dW_{1t} &\\
+		dY_{t} &=\mu dt+\sqrt{v_{t}}[\rho dW_{1t}+\sqrt{1-\rho ^{2}} dW_{2t}] + dZ_{t} &\\
+		dv_{t} &= \kappa (v - v_{t})dt+\sigma _{v}\sqrt{v_{t}}dW_{1t} &\\
 		dZ_{t} &= \gamma dG_{t} + \sigma _{j} \sqrt{dG_{t}}dB_{t}
 	\end{aligned}
 \end{equation}
 Using Euler Discretization, we have the following:
-
-$
-\begin{bmatrix}
+\begin{equation}
+	\begin{aligned}
+		Y_{t+1} &= Y_{t} + \mu\Delta + \sqrt{v_{t}\Delta}\epsilon_{t+1}^{y}+Z_{t+1}\\
+		v_{t+1} &= v_{t} + \kappa(\upsilon - v_{t})\Delta + \sigma_{v}\sqrt{v_{t}\Delta}\epsilon_{t+1}^{v}\\
+		Z_{t+1} &= \gamma G_{t+1} + \sigma_{j}\sqrt{G_{t+1}}\epsilon_{t+1}^{Z}
+	\end{aligned}
+\end{equation}
+where both $\epsilon_{t+1}^{y}$ and $\epsilon_{t+1}^{v}$ follow $N(0,1)$ with $corr(\epsilon_{t+1}^{y},\epsilon_{t+1}^{v})=\rho$ while $\epsilon_{t+1}^{y},\epsilon_{t+1}^{v} \perp G_{t+1}$. The Jump Process $Z_{t+1}$ follows a variance gamma process where $\epsilon_{t+1}^{Z}$ follows $N(0,1)$ and $\epsilon_{t+1}^{Z} \perp \epsilon_{t+1}^{y},\epsilon_{t+1}^{v},G_{t+1}$. $G_{t+1}$ follows a Gamma Distribution, $\Gamma (\alpha,\beta)$.\\
+Hence, we have observations $(Y_{t})_{t=0}^{T}$; latent variables $(v_{t})_{t=0}^{T},(Z_{t})_{t=1}^{T},(G_{t})_{t=1}^{T}$; and parameters $\Theta = \{\mu,\rho,\kappa,\upsilon,\sigma_{v},\gamma,\sigma_{j}\}$. For convenience, we let $\theta = \{\Theta,(v_{t})_{t=0}^{T},(Z_{t})_{t=1}^{T},(G_{t})_{t=1}^{T} \}$.
+\subsection{Derivation of Posterior Density}
+Since $corr(\epsilon_{t+1}^{y},\epsilon_{t+1}^{v})=\rho$ and $\epsilon_{t+1}^{y},\epsilon_{t+1}^{v} \sim N(0,1)$, conditioning on the values of $Z_{t+1}$,$v_{t}$ and $\Theta$, we get
+\begin{equation}
+	\begin{aligned}
+\begin{pmatrix}
 Y_{t+1} - Y_{t}\\
-V_{t+1} - V_{t}
-\end{bmatrix}
-$
+v_{t+1} - v_{t}
+\end{pmatrix} | v_{t},Z_{t+1},\Theta
+= 
+N
+\begin{pmatrix}
+\begin{pmatrix}
+\mu \Delta + Z_{t+1} \\
+\kappa (\theta - \upsilon) \Delta \\
+\end{pmatrix}
+,
+v_{t} \Delta
+\begin{pmatrix}
+1 & \rho \sigma_{v} \\
+\rho \sigma_{v} & \sigma_{v}^2 \\
+\end{pmatrix}
+\end{pmatrix}
+	\end{aligned}
+\end{equation}
+As for the variance gamma process, Li et. al (2006) shows that conditioning on $G_{t+1}$ and $\Theta$, we get \\
+\begin{center}
+$J_{t+1} | G_{t+1},\Theta \sim N(\gamma G_{t+1},\sigma_{j}^{2}G_{t+1})$ \\
+$G_{t+1} | \Theta \sim \Gamma(\frac{\Delta}{v},v)$\\
+\end{center}
+However, in Jasra (2011), it is shown that $G_{t+1}$ can be integrated out:
+\begin{equation}
+	\begin{aligned}
+		p(Z_{t+1}|\Theta) &= \int p(Z_{t+1}|G_{t+1},\Theta)p(G_{t+1}|\Theta) \,dG_{t+1}\\
+		&= \frac{2exp(\frac{\gamma Z_{t+1}^{2}}{\sigma})}{\alpha^{\frac{t-u}{\alpha}}\sqrt{2\pi} \Gamma(\frac{t-u}{\alpha},\frac{1}{\alpha})}\Bigg(\frac{Z_{t+1}^{2}}{\gamma^{2}+2\frac{\sigma^{2}}{\alpha}}\Bigg)^{\frac{t-u}{2\alpha}-\frac{1}{4}}K_{\frac{t-u}{\alpha}-\frac{1}{2}}\Bigg(\frac{\sqrt{Z_{t+1}^{2}(\gamma^{2}+\frac{2\sigma^{2}}{\alpha})}}{\sigma^{2}}\Bigg)
+	\end{aligned}
+\end{equation}
+where $K_{a}(.)$ is the modified Bessel Function of the second kind, and $\sigma = \sigma_{j}\sqrt{t-u}$. In this paper, we will let $\alpha = t-u$. Thus, the simulation procedure is reduced by one dimension, and this reduces the simulation complexity, since there is one lesser latent variable to udpate. \\
+As for the priors, we will follow the ones subscribed by Li (2006).\\
+\\
+$p(\Theta)=p(\mu)p(\gamma)p(\sigma_{j})p(\kappa)p(\sigma_v,\rho)p(\upsilon)$\\
+$\mu,\gamma,\sigma_{j} \sim N(0,1)$\\
+$\kappa,\upsilon \sim N(0,1)$ truncated at 0\\
+Reparameterize $(\rho,\sigma_{v})$ to $(\phi,w)$, where $\phi = \sigma_{v} \rho , w = \sigma_{v}^{2}(1-\rho^{2})$\\
+$w \sim IG(1.0,0.5), \phi | w ~ N(0,0.5w)$\\
 
-
-\section{Sequential Monte Carlo}
+\noindent Now, the posterior distribution is as follows:
+\begin{equation}
+\begin{aligned}
+p(\Theta,v_{1:n},Z_{1:n}|Y_{0:n}) \propto p(\Theta) \prod_{i=0}^{n} p(Y_{i+1},v_{i+1}|Y_{i},v_{i},Z_{i+1},\Theta)p(Z_{i+1}|\Theta)
+\end{aligned}
+\end{equation}
+\subsection{Sequential Monte Carlo}
+\subsubsection{Perfect Monte Carlo}
+Suppose we are able to simulate $N$ i.i.d. random samples/particles $\{\theta_{0:t}^{i},i=1,2,...,N\}$ from a particular distribution (which in this paper, we are refering to the posterior distribution) - $p(\theta_{0:t}|y_{0:t})$. Then, the empirical estimate of this distribution is
+\begin{equation}
+	\begin{aligned}
+		P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})
+	\end{aligned}
+\end{equation}
+where $\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})$ refers to the delta-dirac mass located at $\theta_{0:t}^{i}$. One can then obtain the estimate of $E[f(\theta_{0:t})]$ via
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} = \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})
+	\end{aligned}
+\end{equation}
+If the posterior variance of $f(\theta_{0:t})$ satisfies \(\sigma^{2} :=\) $E[f(\theta_{0:t})^{2}] - E[f(\theta_{0:t})]^{2} < + \infty $, 
+\begin{equation}
+	\begin{aligned}
+		var(E[f(\theta_{0:t})]_{est}) = \frac{\sigma^{2}}{N}
+	\end{aligned}
+\end{equation}
+and by the Strong Law of Large Numbers,
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} \mathrel{\mathop{\rightarrow}^{\mathrm{a.s.}}_{N \rightarrow \infty}} E[f(\theta_{0:t})]
+	\end{aligned}
+\end{equation}
+Also, if $\sigma^{2} < +\infty$, the Central Limit Theorem holds
+\begin{equation}
+	\begin{aligned}
+		\sqrt{N}(E[f(\theta_{0:t})]_{est} - E[f(\theta_{0:t})]) \mathrel{\mathop{\Longrightarrow}_{N \rightarrow \infty}} N(0,\sigma^{2})]
+	\end{aligned}
+\end{equation}
+Unfortunately, it often is difficult to sample from the posterior distribution, especially in high dimensional cases. Markov Chain Monte Carlo (MCMC) methods is a possible alternative, but are unsuited for recursive problems. Hence, we will introduce a new method in this paper.
 \subsection{Importance Sampling}
+One classical method is the use of Importance Sampling method (Geweke 1989). Suppose we are interested in evaluating $E[f(\theta_{0:t})]$. Using a proposal density $\pi(\theta_{0:t})|y_{0:t})$, from which we can easily sample from, we get the following:
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) \\
+		&= \int f(\theta_{0:t}^{i})p(\theta_{0:t}) \,\theta_{0:t} \\
+		&= \int f(\theta_{0:t}^{i})\frac{p(\theta_{0:t})}{\pi(\theta_{0:t})|y_{0:t})}\pi(\theta_{0:t})|y_{0:t})\,d\theta_{0:t} \\
+		&= \int f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})\pi(d\theta_{0:t}|y_{0:t})\,d\theta_{0:t} \\
+	\end{aligned}
+\end{equation}
+Since we can easily simulate from $N$ i.i.d. from $\pi(\theta_{0:t})|y_{0:t})$, we can get an estimate of $E[f(\theta_{0:t})]$
+\begin{equation}
+	\begin{aligned}
+		\hat{E}[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i})\,\hat{P}(d\theta_{0:t}) \\
+		&=\frac{\frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})}{\frac{1}{N}\sum_{i=1}^{N}w(\theta_{0:t}^{i})} \\
+		&= \sum_{i=1}^{N}f(\theta_{0:t}^{i})W(\theta_{0:t}^{i}) \\
+	\end{aligned}
+\end{equation}
+where $w(\theta_{0:t}^{i})$ and $W(\theta_{0:t}^{i})$ is known as the importance weights and normalised weights respectively. Note that we are now operating under the new measure 
+\begin{equation}
+	\begin{aligned}
+		\hat{P}(\theta_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})W(\theta_{0:t}^{i})
+	\end{aligned}
+\end{equation}
+The Importance Sampling method does not work well in this form (especially in high dimensional cases). In addition, under $\mathcal{F}_{t+1}$, one has to recompute the weights/normalised weights despite having the weights/normalised weights at $\mathcal{F}_{t}$ - the recursive problem has yet to be solved! However, this has spawned new innovations, one which we will discuss and use in this paper.
+\subsection{Sequential Importance Sampling}
+The Importance Sampling Method can be improved to include new information, $\mathcal{F}_{t+1}$, without recomputing $\{\theta_{0:t}^{i},i=1,2,...,N\}$. Using the following fact,
+\begin{equation}
+	\begin{aligned}
+		P(A_{n},..,A_{1}|B) = P(A_{n}|A_{n-1},..,B)P(A_{n-1}|A_{n-2},..,B)..P(A_{1}|B)
+	\end{aligned}
+\end{equation}
+we get,
+\begin{equation}
+	\begin{aligned}
+		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{t+1}|\theta_{0:t},y_{1:t+1})\pi(\theta_{0:t}|y_{1:t})
+	\end{aligned}
+\end{equation}
+After iterating,
+\begin{equation}
+	\begin{aligned}
+		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{0})\prod_{i=1}^{t+1}\pi(\theta_{i}|\theta_{0:i-1},y_{1:i})
+	\end{aligned}
+\end{equation}
+Our weights can then be recursively updated using the following
+\begin{equation}
+	\begin{aligned}
+		W(\theta_{0:t+1}^{i}) \propto W(\theta_{0:t}^{i}) \frac{p(y_{t+1}|\theta_{t+1}^{i})p(\theta_{t+1}^{i}|\theta_{t}^{i})}{\pi(\theta_{t+1}^{i}|\theta_{0:t}^{i},y_{1:t+1})}
+	\end{aligned}
+\end{equation}
+One importance case (which we will use) is when we adopt the prior distribution as the importance distribution at $t=0$. 
+\subsection{Simulation using a Sequence of Densities}
+Using the following densities,
+\begin{equation}
+	\begin{aligned}
+		\pi_{k}(\theta_{1:n}|y_{0:n}) \propto p(\Theta)\prod_{i=1}^{n}[p(y_{i},v_{i}|y_{i-1},v_{i-1},z_{i},\Theta)^{\zeta_{k}}p(z_{i}|\Theta)] 
+	\end{aligned}
+\end{equation}
+where $0\leqslant\zeta_{1}<...<\zeta_{p}=1.$ 
+\noindent The idea is to simulate from an 'easy' density, before shifting the particles to a much more difficult density. At $\zeta_{1}$, the tempered posterior density focusses more on the priors than when compared to $\zeta_{k}$ where $k>1$. Overtime, as the algorithm iterates, the tempered posterior focusses less on the prior and more on the liklihood. Hence, when $\zeta_{p}=1$, the particles now exist in the target posterior density.
 
+\subsection{Simulation Procedure}
+To start off the simulation, we first sample from the prior distribution $\pi_{0}$ and Importance sampling is then conducted as below
+\begin{equation}
+	\begin{aligned}
+		w_{1}(\theta^{i}) &= \frac{\pi_{1}(\theta_{1}^{i}|y_{0:n})}{\pi_{0}(\theta_{1}^{i}|y_{0:n})} \\
+		W_{1}(\theta^{i}) &= \frac{w_{1}^{i}}{\sum_{i=1}^{M} w_{1}^{i}}
+	\end{aligned}
+\end{equation}
+At the second iteration, the particles are shifted from $\pi_{1}$ to $\pi_{2}$ via a kernel of invariant distribution $P_{2}(\theta_{1}^{i},\theta_{2}^{i})$
+\begin{equation}
+	\begin{aligned}
+		w_{2}(\theta^{i}) &= \frac{\pi_{2}(\theta_{2}^{i}|y_{0:n})}{\int \pi_{1}(\theta_{1}^{i}|y_{0:n})P(\theta_{1}^{i},\theta_{2}^{i}) \,d\theta_{1}}
+	\end{aligned}
+\end{equation}
+There are many choices of kernels, but in this paper we will adopt the Random Walk Metropolis Kernel. Hence, for $t\geqslant2$,
+\begin{equation}
+	\begin{aligned}
+		w_{k}(\theta^{i}) &= W_{k-1}^{i}(\theta^{i})\prod_{i=1}^{n} p(y_{i}|y_{i-1},v_{i},z_{i},\Theta)^{\zeta_{k}-\zeta_{k-1}}
+	\end{aligned}
+\end{equation}
+
+\noindent For the Random Walk Metropolis Kernel, one has to specify the proposal variance $\psi_{k+1}$ in order for one to update the parameter values. Using adaptive MCMC techniques (Andrieu, Moulines 2006), we approximate the mean and therefore the variance of the parameters at iteration $k$, for the next iteration $k+1$. Also, if the acceptance rate of the parameter is above $0.85$, we tune up the variability by a factor of 5. Likewise, if the acceptance rate of the parameter is below $0.15$, we tune down the variability by a factor of 1/5. 
+
+\subsection{Resampling}
+Like the problem encountered in the Sequential Importance Sampling, the variability of the weights increases as the iteration increases. This is termed as weight degeneracy (Doucet et. al 2001). Hence, to counter this problem, we resample the particles according to the normalised weights within the cloud of particles. After resampling, the weights of the particles are reset to 1. In this paper, we will be using the Multinomial Resampling method, even though more sophisticated methods exist. One point to note is that the resampling should occur too often. When resampling occurs, the number of unique particles fall, hence reducing the particles' approximation of the target density. One criterion to measure the variability of the weights is the Effective Sample Size (ESS) (Doucet et al. 2001). 
+\begin{equation}
+	\begin{aligned}
+		ESS_{k} = \frac{(\sum_{i=1}^{M} w_{k}^{i})^{2}}{\sum_{i=1}^{M} (w_{k}^{i})^{2}}=
+		\frac{(\sum_{i=1}^{M} W_{k}^{i} \prod_{i=1}^{n} p(y_{i}|y_{i-1},v_{i},z_{i},\Theta)^{\zeta_{k}-\zeta_{k-1}})^{2}}{\sum_{i=1}^{M} (W_{k}^{i}\prod_{i=1}^{n} p(y_{i}|y_{i-1},v_{i},z_{i},\Theta)^{\zeta_{k}-\zeta_{k-1}})^{2}}
+	\end{aligned}
+\end{equation}
+The idea of this criterion is to give insight on the approximate number of samples relative to an independent simulation approach (Jasra et. al 2006). When $ESS_{k}$ drops below some threshold $l$, we resample. \\
+\\
+\noindent In this paper, at iteration $k$ of the algorithm, we let $ESS_{k}=0.95ESS_{k-1}$. Using the bisection method, we are able to calculate $\zeta_{k}$ using (18). 
+
+\subsection{The SMC Algorithm}
+Therefore, the algorithm is as follows:
+At iteration k=1, sample $\theta_{1}^{i} \sim \pi_{1}$ for $i=1,..,M$ and compute\\
+\begin{center}
+$w_{1}(\theta^{i}) = \frac{\pi_{1}(\theta_{1}^{i}|y_{0:n})}{\pi_{0}(\theta_{1}^{i}|y_{0:n})}$\\
+$W_{1}(\theta^{i}) = \frac{w_{1}^{i}}{\sum_{i=1}^{M} w_{1}^{i}}$
+\end{center}
+If $ESS_{k} \leqslant l$, resample and set $W_{1}(\theta^{i}) = 1/M$. Set $\psi_{k+1}$ for each kernel. \\
+\noindent At iteration $k=2,..,p$, set $\zeta_{k}$ and compute
+\begin{center}
+$w_{k}(\theta^{i}) = \frac{\pi_{1}(\theta_{1}^{i}|y_{0:n})}{\pi_{0}(\theta_{1}^{i}|y_{0:n})}$\\
+$W_{k}(\theta^{i}) = \frac{w_{k}^{i}}{\sum_{i=1}^{M} w_{k}^{i}}$
+\end{center}
+If $ESS_{k} \leqslant l$, resample and set $W_{k}(\theta^{i}) = 1/M$. If $k < l$, set $\psi_{k+1}$ for each kernel.
 \end{document}
