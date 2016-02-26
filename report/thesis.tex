@@ -46,7 +46,7 @@ For $n\ge 2$, a probability distribution F is infinitely divisibile if there exi
 
 \justify Due to fact that L\'{e}vy Processes are semimartingales and that their increments are independent, the process is Markovian and therefore in line with the Efficient Market Hypothesis. Hence, such processes are suitable to model asset prices (Li 2006). 
 \subsubsection{Infinite Activity Processes - Variance Gamma}
-The probability densities of most L\'{e}vy processese are known in closed forms. However, their characteristics functions $\phi_{X_{t}}(u)$ is as follows:
+The probability densities of most L\'{e}vy processes are not known in closed forms. However, their characteristics function $\phi_{X_{t}}(u)$ is as follows:
 \begin{center}
 $
 \phi_{X_{t}}(u) = E[\exp^{iuX_{t}}] = \exp^{-t\psi_{x}(u)},t\ge 0
@@ -66,13 +66,140 @@ Unlike the Finite Activity models (such as the Merton Jump Model) under the fami
 $\int_{R_{0}} \pi (dx) \not< \infty$
 \end{center}
 
-Within the category of Infinite Activity L\'{e}vy Processes, the jump process can have either finite or infinite variation. In the case of the finite/infinite variation, the sum of the absolute distance is finite/infinite over any finite time interval. For this paper, we will only be focussing on the Variance Gamma Process - a member from the Infinite Activity with Finite Variation. This process,$Z_{t}$ is created using a Brownian Motion, with drift $\gamma$ and variance $\sigma_{j}^2$, subordinated by an independent gamma process, $G_{t}$, with parameter $\alpha$.
+Within the category of Infinite Activity L\'{e}vy Processes, the jump process can have either finite or infinite variation. In the case of the finite/infinite variation, the sum of the absolute distance is finite/infinite over any finite time interval. For this paper, we will only be focussing on the Variance Gamma Process - a member from the Infinite Activity with Finite Variation. This process, $Z_{t}$, is created using a Brownian Motion, $B_{t}$, with drift $\gamma$ and variance $\sigma_{j}^2$, subordinated by an independent gamma process, $G_{t}$, with parameter $\alpha$.
 \begin{center}
+$dZ_{t} = \gamma dG_{t} + \sigma_{j}\sqrt{dG_{t}}dB_{t}$\\
 $G_{t+t_{0}} - G_{t} \sim Ga(\frac{t}{\alpha},\frac{1}{\alpha})$
 \end{center}
+with the L\'{e}vy measure given by
+\begin{center}
+$\pi(dx) = \frac{A^{2}_{\pm}\exp(-\frac{A_{\pm}}{B_{\pm}}|x|)}{B_{\pm}|x|}(dx)$
+\end{center}
+where $A_{\pm}=\frac{1}{v}\sqrt{\frac{\gamma^{2}v^{2}}{4}+\frac{\sigma^{2}}{2} \pm \frac{\gamma v}{2}},B_{\pm}=A^{2}_{\pm}v$. In the case where $\gamma=0$, the jumps are symmetric about 0.
 
+\subsection{Sequential Monte Carlo}
+\subsubsection{Perfect Monte Carlo}
+Suppose we are able to simulate $N$ i.i.d. random samples/particles $\{\theta_{0:t}^{i},i=1,2,...,N\}$ from a particular distribution (which in this paper, we are refering to the posterior distribution) - $p(\theta_{0:t}|y_{0:t})$. Then, the empirical estimate of this distribution is
+\begin{equation}
+	\begin{aligned}
+		P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})
+	\end{aligned}
+\end{equation}
+where $\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})$ refers to the delta-dirac mass located at $\theta_{0:t}^{i}$. One can then obtain the estimate of $E[f(\theta_{0:t})]$ via
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} = \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})
+	\end{aligned}
+\end{equation}
+If the posterior variance of $f(\theta_{0:t})$ satisfies \(\sigma^{2} :=\) $E[f(\theta_{0:t})^{2}] - E[f(\theta_{0:t})]^{2} < + \infty $, 
+\begin{equation}
+	\begin{aligned}
+		var(E[f(\theta_{0:t})]_{est}) = \frac{\sigma^{2}}{N}
+	\end{aligned}
+\end{equation}
+and by the Strong Law of Large Numbers,
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} \mathrel{\mathop{\rightarrow}^{\mathrm{a.s.}}_{N \rightarrow \infty}} E[f(\theta_{0:t})]
+	\end{aligned}
+\end{equation}
+Also, if $\sigma^{2} < +\infty$, the Central Limit Theorem holds
+\begin{equation}
+	\begin{aligned}
+		\sqrt{N}(E[f(\theta_{0:t})]_{est} - E[f(\theta_{0:t})]) \mathrel{\mathop{\Longrightarrow}_{N \rightarrow \infty}} N(0,\sigma^{2})]
+	\end{aligned}
+\end{equation}
+Unfortunately, it often is difficult to sample from the posterior distribution, especially in high dimensional cases. Markov Chain Monte Carlo (MCMC) methods is a possible alternative, but are unsuited for recursive problems. Hence, we will introduce a new method in this paper.
+\subsubsection{Importance Sampling}
+One classical method is the use of Importance Sampling method (Geweke 1989). Suppose we are interested in evaluating $E[f(\theta_{0:t})]$. Using a proposal density $\pi(\theta_{0:t}|y_{0:t})$, from which we can easily sample from, we get the following:
+\begin{equation}
+	\begin{aligned}
+		E[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) \\
+		&= \int f(\theta_{0:t}^{i})p(\theta_{0:t}|y_{0:t}) \,d\theta_{0:t} \\
+		&= \int f(\theta_{0:t}^{i})\frac{p(\theta_{0:t}|y_{0:t})}{\pi(\theta_{0:t}|y_{0:t})}\pi(\theta_{0:t}|y_{0:t})\,d\theta_{0:t} \\
+		&= \int f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})\pi(\theta_{0:t}|y_{0:t})\,d\theta_{0:t} \\
+	\end{aligned}
+\end{equation}
+Since we can easily simulate from $N$ i.i.d. from $\pi(\theta_{0:t}|y_{0:t})$, we can get an estimate of $E[f(\theta_{0:t})]$
+\begin{equation}
+	\begin{aligned}
+		\hat{E}[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i})\,\hat{P}(d\theta_{0:t}) \\
+		&=\frac{\frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})}{\frac{1}{N}\sum_{i=1}^{N}w(\theta_{0:t}^{i})} \\
+		&= \sum_{i=1}^{N}f(\theta_{0:t}^{i})W(\theta_{0:t}^{i}) \\
+	\end{aligned}
+\end{equation}
+where $w(\theta_{0:t}^{i})$ and $W(\theta_{0:t}^{i})$ is known as the importance weights and normalised weights respectively. Note that we are now operating under the new measure 
+\begin{equation}
+	\begin{aligned}
+		\hat{P}(\theta_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})W(\theta_{0:t}^{i})
+	\end{aligned}
+\end{equation}
+The Importance Sampling method does not work well in this form (especially in high dimensional cases). In addition, under $\mathcal{F}_{t+1}$, one has to recompute the weights/normalised weights despite having the weights/normalised weights at $\mathcal{F}_{t}$ - the recursive problem has yet to be solved! However, this has spawned new innovations, one which we will discuss and use in this paper.
+\subsubsection{Sequential Importance Sampling (SIS)}
+The Importance Sampling Method can be improved to include new information, $\mathcal{F}_{t+1}$, without recomputing $\{\theta_{0:t}^{i},i=1,2,...,N\}$. Using the following fact,
+\begin{equation}
+	\begin{aligned}
+		P(A_{n},..,A_{1}|B) = P(A_{n}|A_{n-1},..,B)P(A_{n-1}|A_{n-2},..,B)..P(A_{1}|B)
+	\end{aligned}
+\end{equation}
+we get,
+\begin{equation}
+	\begin{aligned}
+		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{t+1}|\theta_{0:t},y_{1:t+1})\pi(\theta_{0:t}|y_{1:t})
+	\end{aligned}
+\end{equation}
+After iterating,
+\begin{equation}
+	\begin{aligned}
+		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{0})\prod_{i=1}^{t+1}\pi(\theta_{i}|\theta_{0:i-1},y_{1:i})
+	\end{aligned}
+\end{equation}
+Our weights can then be recursively updated using the following
+\begin{equation}
+	\begin{aligned}
+		W(\theta_{0:t+1}^{i}) \propto W(\theta_{0:t}^{i}) \frac{p(y_{t+1}|\theta_{t+1}^{i})p(\theta_{t+1}^{i}|\theta_{t}^{i})}{\pi(\theta_{t+1}^{i}|\theta_{0:t}^{i},y_{1:t+1})}
+	\end{aligned}
+\end{equation}
+One importance case (which we will use) is when we adopt the prior distribution as the importance distribution at $t=0$. However, one drawback of using the SIS method is that one is unable to get the Importance distribution $\pi_{t}(\theta_{1:t})$
+\begin{equation}
+	\begin{aligned}
+		\pi_{t}(\theta_{1:t}) = \int \pi_{1}(\theta_{1})\prod_{k=2}^{t}K_{k}(\theta_{k-1},\theta_{k}) \,d\theta_{1:t-1}
+	\end{aligned}
+\end{equation}
+Although there are some approximations by used for local random-walk moves, the complexity of the algorithm is $O(N^2)$ and one cannot compute $K_{t}(\theta_{t-1},\theta_{t})$ pointwise (Del Moral, Doucet, Jasra 2006).
+\subsubsection{Sequential Monte Carlo Samplers (SMC)}
+The main idea of the Sequential Monte Carlo Samplers is to introduce artificial backward Markov Kernels, $L_{t-1}$ and propose an auxiliary variable technique. Given
+\begin{center}
+$\widetilde{p_{t}}(\theta_{1:t}) = \frac{\widetilde{\gamma_{t}}(\theta_{1:t})}{C_{t}}$\\
+$\widetilde{\gamma_{t}}(\theta_{1:t}) = \gamma_{t}(\theta_{t})\prod_{k=1}^{t-1} L_{k}(\theta_{k+1},\theta_{k})$
+\end{center}
+where $C_{t}$ is the normalisation constant for the unnormalised probability density $\widetilde{\gamma_{t}}(\theta_{1:t})$ and $\gamma_{t}(\theta_{t})$ is the actual unnormalised probability density function of the distribution in question. Suppose, at $\mathcal{F}_{t}$, we have $\{W^{i}_{t},\theta_{0:t}^{i},i=1,2,...,N\}$ approximating $\widetilde{p_{t}}(\theta_{1:t})$
+\begin{center}
+$\widetilde{p_{t}^{N}}(d\theta_{1:t})=\sum_{i=1}^{N} W^{i}_{t} \delta_{\theta_{1:t}}(d\theta_{1:t})$\\
+$W^{i}_{t}(\theta^{i}_{1:t}) = \frac{w^{i}_{t}(\theta^{i}_{1:t})}{\sum_{i=1}^{N} w^{i}_{t}(\theta^{i}_{1:t})}$
+\end{center}
+where $w_{t}^{i}(\theta_{1:t}^{i})$ is the standard Importance weights in (7). Now, at $\mathcal{F}_{t+1}$, we bring the particles forwards via the Markov Kernel $K_{t+1}(\theta_{t},\theta_{t+1})$. The unnormalised weights is computed using
+\begin{equation}
+w^{i}_{t+1}(\theta_{1:t+1}) = \frac{\gamma_{t+1}(\theta_{1:t+1})}{\pi_{t+1}(\theta_{1:t+1})} = w^{i}_{t}(\theta_{1:t})\widetilde{w}^{i}_{t+1}(\theta_{t},\theta_{t+1})
+\end{equation}
+where the incremental weight, $\widetilde{w}^{i}_{t+1}(\theta_{t},\theta_{t+1})$ equals to
+\begin{equation}
+\widetilde{w}^{i}_{t+1}(\theta_{t},\theta_{t+1}) = \frac{\gamma_{t+1}(\theta_{t+1})L_{t}(\theta_{t+1},\theta_{t})}{\gamma_{t}(\theta_{t})K_{t+1}(\theta_{t},\theta_{t+1})}
+\end{equation}
+In the case of Markov Chain Monte Carlo Kernels, we can define the backward Markov Kernel suboptimally, by
+\begin{equation}
+L_{t}(\theta_{t+1},\theta_{t}) = \frac{p_{t+1}(\theta_{t})K_{t+1}(\theta_{t},\theta_{t+1})}{p_{t+1}(\theta_{t})}
+\end{equation}
+If $p_{t} \approx p_{t+1}$, then
+\begin{center}
+$L_{t}(\theta_{t+1},\theta_{t})  \approx L^{sub}_{t}(\theta_{t+1},\theta_{t})  = \frac{p_{t}(\theta_{t})K_{t+1}(\theta_{t},\theta_{t+1})}{\int p_{t}(\theta_{t})K(\theta_{t},\theta_{t+1})\,d\theta_{t}}$
+\end{center}
+Thus, we will have the following incremental weights
+\begin{equation}
+\widetilde{w}_{t+1}^{i}(\theta_{t},\theta_{t+1}) = \frac{\gamma_{t+1}(\theta_{t})}{\gamma_{t}(\theta_{t})}
+\end{equation}
 
-
+\section{Literature Review}
 \subsection{The Model}
 For the purposes of this paper, we will be focusing on the Stochastic Volatility with Variance Gamma Jumps in Returns (SVVG). The model is as follows:
 
@@ -101,7 +228,7 @@ Since $corr(\epsilon_{t+1}^{y},\epsilon_{t+1}^{v})=\rho$ and $\epsilon_{t+1}^{y}
 Y_{t+1} - Y_{t}\\
 v_{t+1} - v_{t}
 \end{pmatrix} | v_{t},Z_{t+1},\Theta
-= 
+\sim
 N
 \begin{pmatrix}
 \begin{pmatrix}
@@ -144,90 +271,7 @@ $w \sim IG(1.0,0.5), \phi | w ~ N(0,0.5w)$\\
 p(\Theta,v_{1:n},Z_{1:n}|Y_{0:n}) \propto p(\Theta) \prod_{i=0}^{n} p(Y_{i+1},v_{i+1}|Y_{i},v_{i},Z_{i+1},\Theta)p(Z_{i+1}|\Theta)
 \end{aligned}
 \end{equation}
-\subsection{Sequential Monte Carlo}
-\subsubsection{Perfect Monte Carlo}
-Suppose we are able to simulate $N$ i.i.d. random samples/particles $\{\theta_{0:t}^{i},i=1,2,...,N\}$ from a particular distribution (which in this paper, we are refering to the posterior distribution) - $p(\theta_{0:t}|y_{0:t})$. Then, the empirical estimate of this distribution is
-\begin{equation}
-	\begin{aligned}
-		P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})
-	\end{aligned}
-\end{equation}
-where $\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})$ refers to the delta-dirac mass located at $\theta_{0:t}^{i}$. One can then obtain the estimate of $E[f(\theta_{0:t})]$ via
-\begin{equation}
-	\begin{aligned}
-		E[f(\theta_{0:t})]_{est} = \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})
-	\end{aligned}
-\end{equation}
-If the posterior variance of $f(\theta_{0:t})$ satisfies \(\sigma^{2} :=\) $E[f(\theta_{0:t})^{2}] - E[f(\theta_{0:t})]^{2} < + \infty $, 
-\begin{equation}
-	\begin{aligned}
-		var(E[f(\theta_{0:t})]_{est}) = \frac{\sigma^{2}}{N}
-	\end{aligned}
-\end{equation}
-and by the Strong Law of Large Numbers,
-\begin{equation}
-	\begin{aligned}
-		E[f(\theta_{0:t})]_{est} \mathrel{\mathop{\rightarrow}^{\mathrm{a.s.}}_{N \rightarrow \infty}} E[f(\theta_{0:t})]
-	\end{aligned}
-\end{equation}
-Also, if $\sigma^{2} < +\infty$, the Central Limit Theorem holds
-\begin{equation}
-	\begin{aligned}
-		\sqrt{N}(E[f(\theta_{0:t})]_{est} - E[f(\theta_{0:t})]) \mathrel{\mathop{\Longrightarrow}_{N \rightarrow \infty}} N(0,\sigma^{2})]
-	\end{aligned}
-\end{equation}
-Unfortunately, it often is difficult to sample from the posterior distribution, especially in high dimensional cases. Markov Chain Monte Carlo (MCMC) methods is a possible alternative, but are unsuited for recursive problems. Hence, we will introduce a new method in this paper.
-\subsection{Importance Sampling}
-One classical method is the use of Importance Sampling method (Geweke 1989). Suppose we are interested in evaluating $E[f(\theta_{0:t})]$. Using a proposal density $\pi(\theta_{0:t})|y_{0:t})$, from which we can easily sample from, we get the following:
-\begin{equation}
-	\begin{aligned}
-		E[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i}) \,P_{N}(d\theta_{0:t}|y_{0:t}) \\
-		&= \int f(\theta_{0:t}^{i})p(\theta_{0:t}) \,\theta_{0:t} \\
-		&= \int f(\theta_{0:t}^{i})\frac{p(\theta_{0:t})}{\pi(\theta_{0:t})|y_{0:t})}\pi(\theta_{0:t})|y_{0:t})\,d\theta_{0:t} \\
-		&= \int f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})\pi(d\theta_{0:t}|y_{0:t})\,d\theta_{0:t} \\
-	\end{aligned}
-\end{equation}
-Since we can easily simulate from $N$ i.i.d. from $\pi(\theta_{0:t})|y_{0:t})$, we can get an estimate of $E[f(\theta_{0:t})]$
-\begin{equation}
-	\begin{aligned}
-		\hat{E}[f(\theta_{0:t})]_{est} &= \int f(\theta_{0:t}^{i})\,\hat{P}(d\theta_{0:t}) \\
-		&=\frac{\frac{1}{N}\sum_{i=1}^{N}f(\theta_{0:t}^{i})w(\theta_{0:t}^{i})}{\frac{1}{N}\sum_{i=1}^{N}w(\theta_{0:t}^{i})} \\
-		&= \sum_{i=1}^{N}f(\theta_{0:t}^{i})W(\theta_{0:t}^{i}) \\
-	\end{aligned}
-\end{equation}
-where $w(\theta_{0:t}^{i})$ and $W(\theta_{0:t}^{i})$ is known as the importance weights and normalised weights respectively. Note that we are now operating under the new measure 
-\begin{equation}
-	\begin{aligned}
-		\hat{P}(\theta_{0:t}) = \frac{1}{N}\sum_{i=1}^{N}\delta_{\theta_{0:t}^{i}}(d\theta_{0:t})W(\theta_{0:t}^{i})
-	\end{aligned}
-\end{equation}
-The Importance Sampling method does not work well in this form (especially in high dimensional cases). In addition, under $\mathcal{F}_{t+1}$, one has to recompute the weights/normalised weights despite having the weights/normalised weights at $\mathcal{F}_{t}$ - the recursive problem has yet to be solved! However, this has spawned new innovations, one which we will discuss and use in this paper.
-\subsection{Sequential Importance Sampling}
-The Importance Sampling Method can be improved to include new information, $\mathcal{F}_{t+1}$, without recomputing $\{\theta_{0:t}^{i},i=1,2,...,N\}$. Using the following fact,
-\begin{equation}
-	\begin{aligned}
-		P(A_{n},..,A_{1}|B) = P(A_{n}|A_{n-1},..,B)P(A_{n-1}|A_{n-2},..,B)..P(A_{1}|B)
-	\end{aligned}
-\end{equation}
-we get,
-\begin{equation}
-	\begin{aligned}
-		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{t+1}|\theta_{0:t},y_{1:t+1})\pi(\theta_{0:t}|y_{1:t})
-	\end{aligned}
-\end{equation}
-After iterating,
-\begin{equation}
-	\begin{aligned}
-		\pi(\theta_{0:t+1}|y_{1:t+1}) = \pi(\theta_{0})\prod_{i=1}^{t+1}\pi(\theta_{i}|\theta_{0:i-1},y_{1:i})
-	\end{aligned}
-\end{equation}
-Our weights can then be recursively updated using the following
-\begin{equation}
-	\begin{aligned}
-		W(\theta_{0:t+1}^{i}) \propto W(\theta_{0:t}^{i}) \frac{p(y_{t+1}|\theta_{t+1}^{i})p(\theta_{t+1}^{i}|\theta_{t}^{i})}{\pi(\theta_{t+1}^{i}|\theta_{0:t}^{i},y_{1:t+1})}
-	\end{aligned}
-\end{equation}
-One importance case (which we will use) is when we adopt the prior distribution as the importance distribution at $t=0$. 
+
 \subsection{Simulation using a Sequence of Densities}
 Using the following densities,
 \begin{equation}
@@ -287,4 +331,7 @@ $w_{k}(\theta^{i}) = \frac{\pi_{1}(\theta_{1}^{i}|y_{0:n})}{\pi_{0}(\theta_{1}^{
 $W_{k}(\theta^{i}) = \frac{w_{k}^{i}}{\sum_{i=1}^{M} w_{k}^{i}}$
 \end{center}
 If $ESS_{k} \leqslant l$, resample and set $W_{k}(\theta^{i}) = 1/M$. If $k < l$, set $\psi_{k+1}$ for each kernel.
+
 \end{document}
+
+

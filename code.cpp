@@ -26,7 +26,7 @@ double zeta = 0.00001;
 double prev_zeta = 0.000;
 double ESS_k;
 double threshold = 1000.0;
-int file = 27;
+int file = 100;
 
 int main(){
     srand(time(0));
