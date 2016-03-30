@@ -82,6 +82,33 @@ double rgamma(int alpha){
 }
 */
 
+void reset(){
+    price.clear();
+    total = 0;
+    for(int i =0;i<no_particles;i++){
+        delete head[i].posterior;
+        delete head[i].post_z;
+        delete head[i].post_lik;
+        delete head[i].z;
+        delete head[i].v;
+    }
+    delete head;
+    head = NULL;
+    delete acc->v;
+    acc->v = NULL;
+    delete acc->z;
+    acc->z = NULL;
+    delete kernel->v;
+    kernel->v = NULL;
+    delete kernel->z;
+    kernel->z = NULL;
+    delete kernel;
+    kernel = NULL;
+    delete acc;
+    acc = NULL;
+    return ;
+}
+
 void print_acc(para* curr){
     
     cout<<curr->mu/no_particles<<","<<curr->gam/no_particles<<","<<curr->sigma_j/no_particles<<","<<curr->sigma_v/no_particles<<","<<curr->rho/no_particles<<","<<curr->k/no_particles<<","<<curr->v_p/no_particles<<","<<curr->z[0]/(no_particles*total)<<","<<curr->v[0]/(no_particles*total)<<endl;
@@ -120,7 +147,7 @@ void print(){
     if(file==0)
         myfile.open("output.csv");
     else{
-        string a = "output";
+        string a = output_folder+"output";
         string b = ".csv";
         string name = a+to_string(file)+b;
         myfile.open(name);
@@ -171,7 +198,7 @@ void init(){
     if(file==0)
         myfile.open("data.csv");
     else{
-        string a = "data";
+        string a = data_folder+"data";
         string b = ".csv";
         string name = a+to_string(file)+b;
         myfile.open(name);
@@ -181,7 +208,7 @@ void init(){
     while(myfile.good()){
         getline(myfile,line);
         int pos = line.find(",");
-        if(pos==3){
+        if(pos>=3){
             price.push_back(stod(line.substr(pos+1)));
         }
         

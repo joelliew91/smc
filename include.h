@@ -30,7 +30,8 @@ struct para{
 extern para* head;
 extern para* kernel;
 extern para* acc;
-
+extern std::string data_folder;
+extern std::string output_folder;
 extern std::vector<double> price;
 extern double delta;
 extern double dmax;
@@ -41,6 +42,7 @@ extern double TOL;
 extern int file;
 //init.cpp
 void print_acc(para* curr);
+void reset();
 //double min();
 //double max();
 void init();

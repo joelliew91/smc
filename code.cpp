@@ -7,6 +7,7 @@
 #include <time.h>
 #include <complex>
 #include <fstream>
+#include <string>
 
 double TOL = 0.000001;
 double ep = pow(10,-300);
@@ -26,9 +27,13 @@ double zeta = 0.00001;
 double prev_zeta = 0.000;
 double ESS_k;
 double threshold = 1000.0;
-int file = 100;
+int file=1;
+string data_folder = "data/";
+string output_folder = "output/";
 
 int main(){
+    while(file != 2281){
+        cout<<file<<endl;
     srand(time(0));
     init();
     init_post();
@@ -46,7 +51,6 @@ int main(){
     int flag = 1;
     while(zeta<1.000001){
         update_para(zeta);
-        update_all();
         cout<<count<<","<<zeta<<","<<ESS_k<<",";
         print_acc(acc);
     
@@ -68,6 +72,12 @@ int main(){
         acc_init();
         count++;
     }
-    print();
+        print();
+        file++;
+        zeta = 0.00001;
+        prev_zeta = 0.0;
+        reset();
+        cout<<"reset"<<endl;
+    }
 	return 0;
 }
