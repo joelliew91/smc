@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.1.14)  26 FEB 2016 22:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.1.14)  11 MAR 2016 14:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -8,8 +8,8 @@ LaTeX2e <2015/01/01>
 Babel <3.9l> and hyphenation patterns for 79 languages loaded.
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
-(/usr/local/texlive/2015/texmf-dist/tex/latex/base/size11.clo
-File: size11.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@section=\count80
@@ -228,37 +228,215 @@ Package: amsthm 2015/03/04 v2.20.2
 \dth@everypar=\toks25
 )
 \c@definition=\count100
- (./thesis.aux)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks26
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2014/10/28 v1.0p Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 94.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count101
+))
+\Gin@req@height=\dimen113
+\Gin@req@width=\dimen114
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/local/texlive/2015/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count102
+\Gm@cntv=\count103
+\c@Gm@tempcnt=\count104
+\Gm@bindingoffset=\dimen115
+\Gm@wd@mp=\dimen116
+\Gm@odd@mp=\dimen117
+\Gm@even@mp=\dimen118
+\Gm@layoutwidth=\dimen119
+\Gm@layoutheight=\dimen120
+\Gm@layouthoffset=\dimen121
+\Gm@layoutvoffset=\dimen122
+\Gm@dimlist=\toks27
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2013/05/02 v3.3-89 Customizing captions (AR)
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2013/05/02 v1.6-88 caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 57.
+\captionmargin=\dimen123
+\captionmargin@=\dimen124
+\captionwidth=\dimen125
+\caption@tempdima=\dimen126
+\caption@indent=\dimen127
+\caption@parindent=\dimen128
+\caption@hangindent=\dimen129
+)
+\c@ContinuedFloat=\count105
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2013/02/03 v1.1-62 Sub-captions (AR)
+\c@subfigure=\count106
+\c@subtable=\count107
+)
+(./thesis.aux
+
+LaTeX Warning: Label `fig:test9' multiply defined.
+
+)
 \openout1 = `thesis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 17.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 17.
-(/usr/local/texlive/2015/texmf-dist/tex/latex/base/ts1cmr.fd
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 21.
+LaTeX Font Info:    ... okay on input line 21.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 21.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 21.
+ (/usr/local/texlive/2015/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 17.
-Package ragged2e Info: ABD: executing \RaggedRight on input line 17.
+LaTeX Font Info:    ... okay on input line 21.
+Package ragged2e Info: ABD: executing \RaggedRight on input line 21.
 
 ABD: EverySelectfont initializing macros
-LaTeX Info: Redefining \selectfont on input line 17.
-LaTeX Font Info:    Try loading font information for U+msa on input line 18.
+LaTeX Info: Redefining \selectfont on input line 21.
 
+(/usr/local/texlive/2015/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count108
+\scratchdimen=\dimen130
+\scratchbox=\box28
+\nofMPsegments=\count109
+\nofMParguments=\count110
+\everyMPshowfont=\toks28
+\MPscratchCnt=\count111
+\MPscratchDim=\dimen131
+\MPnumerator=\count112
+\makeMPintoPDFobject=\count113
+\everyMPtoPDFconversion=\toks29
+) (/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+))
+(/usr/local/texlive/2015/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/local/texlive/2015/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(85.35826pt, 443.57848pt, 85.35826pt)
+* v-part:(T,H,B)=(85.35826pt, 624.25346pt, 85.35826pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=443.57848pt
+* \textheight=624.25346pt
+* \oddsidemargin=13.08827pt
+* \evensidemargin=13.08827pt
+* \topmargin=-23.91173pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=44.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+LaTeX Font Info:    Try loading font information for U+msa on input line 22.
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 18.
+LaTeX Font Info:    Try loading font information for U+msb on input line 22.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -271,83 +449,170 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \openout3 = `thesis.toc'.
 
  [4] [5]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 60.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 64.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 60.
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 64.
  [6] [7] [8]
-[9] [10] [11] [12]
-Overfull \hbox (1.61761pt too wide) in paragraph at lines 220--223
-\OT1/cmr/m/n/10.95 Hence, we have ob-ser-va-tions $(\OML/cmm/m/it/10.95 Y[]\OT1
-/cmr/m/n/10.95 )[]$; la-tent vari-ables $(\OML/cmm/m/it/10.95 v[]\OT1/cmr/m/n/1
-0.95 )[]\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 Z[]\OT1/c
-mr/m/n/10.95 )[]\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 G
-[]\OT1/cmr/m/n/10.95 )[]$;
+[9] [10] [11]
+Overfull \hbox (20.28116pt too wide) in paragraph at lines 224--227
+\OT1/cmr/m/n/12 ram-e-ters $^^B = \OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 ^^V; ^^Z; 
+^^T; ^^]; ^^[[]; ^^M; ^^[[]\OMS/cmsy/m/n/12 g$\OT1/cmr/m/n/12 . For con-ve-nien
+ce, we let $\OML/cmm/m/it/12 ^^R \OT1/cmr/m/n/12 = \OMS/cmsy/m/n/12 f\OT1/cmr/m
+/n/12 ^^B\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 (\OML/cmm/m/it/12 v[]\OT1/cmr/m/n/1
+2 )[]\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 (\OML/cmm/m/it/12 Z[]\OT1/cmr/m/n/12 )[
+]\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 (\OML/cmm/m/it/12 G[]\OT1/cmr/m/n/12 )[]\OM
+S/cmsy/m/n/12 g$\OT1/cmr/m/n/12 . 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 246--248
+Underfull \hbox (badness 10000) in paragraph at lines 250--252
 
  []
 
-[13]
-Overfull \hbox (25.04231pt too wide) detected at line 258
- $[] []$  
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 258--267
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 258--267
-
- []
-
-[14] [15] [16]
-Underfull \hbox (badness 10000) in paragraph at lines 315--319
+[12]
+Underfull \hbox (badness 10000) in paragraph at lines 262--271
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 321--323
+Underfull \hbox (badness 10000) in paragraph at lines 262--271
 
  []
 
-[17] [18] (./thesis.aux) ) 
+[13] [14]
+Underfull \hbox (badness 10000) in paragraph at lines 319--323
+
+ []
+
+[15]
+Underfull \hbox (badness 10000) in paragraph at lines 325--327
+
+ []
+
+<plots/density_plots.png, id=64, 606.265pt x 467.7475pt>
+File: plots/density_plots.png Graphic file (type png)
+
+<use plots/density_plots.png>
+Package pdftex.def Info: plots/density_plots.png used on input line 343.
+(pdftex.def)             Requested size: 443.57848pt x 342.23792pt.
+ [16] [17 <./plots/density_plots.png>]
+<plots/ts1.png, id=73, 606.265pt x 467.7475pt>
+File: plots/ts1.png Graphic file (type png)
+ <use plots/ts1.png>
+Package pdftex.def Info: plots/ts1.png used on input line 376.
+(pdftex.def)             Requested size: 221.78923pt x 171.11539pt.
+
+<plots/ts2.png, id=74, 606.265pt x 467.7475pt>
+File: plots/ts2.png Graphic file (type png)
+ <use plots/ts2.png>
+Package pdftex.def Info: plots/ts2.png used on input line 382.
+(pdftex.def)             Requested size: 221.78923pt x 171.11539pt.
+ [18]
+<plots/ts3.png, id=78, 606.265pt x 467.7475pt>
+File: plots/ts3.png Graphic file (type png)
+ <use plots/ts3.png>
+Package pdftex.def Info: plots/ts3.png used on input line 390.
+(pdftex.def)             Requested size: 221.78923pt x 171.11539pt.
+
+<plots/ts4.png, id=79, 606.265pt x 467.7475pt>
+File: plots/ts4.png Graphic file (type png)
+ <use plots/ts4.png>
+Package pdftex.def Info: plots/ts4.png used on input line 400.
+(pdftex.def)             Requested size: 199.60895pt x 154.00027pt.
+
+<plots/ts5.png, id=80, 606.265pt x 467.7475pt>
+File: plots/ts5.png Graphic file (type png)
+ <use plots/ts5.png>
+Package pdftex.def Info: plots/ts5.png used on input line 406.
+(pdftex.def)             Requested size: 199.60895pt x 154.00027pt.
+ [19 <./plots/ts1.png> <./plots/ts2.png> <./plots/ts3.png>]
+<plots/returns.png, id=88, 408.52625pt x 448.67625pt>
+File: plots/returns.png Graphic file (type png)
+ <use plots/returns.png>
+Package pdftex.def Info: plots/returns.png used on input line 436.
+(pdftex.def)             Requested size: 221.78923pt x 243.5892pt.
+
+[20 <./plots/ts4.png> <./plots/ts5.png>] [21]
+<plots/trg.png, id=98, 408.52625pt x 448.67625pt>
+File: plots/trg.png Graphic file (type png)
+ <use plots/trg.png>
+Package pdftex.def Info: plots/trg.png used on input line 454.
+(pdftex.def)             Requested size: 221.78923pt x 243.5892pt.
+
+<plots/opt_curve.png, id=99, 408.52625pt x 448.67625pt>
+File: plots/opt_curve.png Graphic file (type png)
+
+<use plots/opt_curve.png>
+Package pdftex.def Info: plots/opt_curve.png used on input line 462.
+(pdftex.def)             Requested size: 199.60895pt x 219.23027pt.
+
+<plots/opt_eq.png, id=100, 408.52625pt x 448.67625pt>
+File: plots/opt_eq.png Graphic file (type png)
+ <use plots/opt_eq.png>
+Package pdftex.def Info: plots/opt_eq.png used on input line 468.
+(pdftex.def)             Requested size: 199.60895pt x 219.23027pt.
+
+<plots/final.png, id=101, 408.52625pt x 448.67625pt>
+File: plots/final.png Graphic file (type png)
+ <use plots/final.png>
+Package pdftex.def Info: plots/final.png used on input line 475.
+(pdftex.def)             Requested size: 326.82144pt x 358.94148pt.
+
+<plots/opt2.png, id=102, 408.52625pt x 448.67625pt>
+File: plots/opt2.png Graphic file (type png)
+ <use plots/opt2.png>
+Package pdftex.def Info: plots/opt2.png used on input line 484.
+(pdftex.def)             Requested size: 199.60895pt x 219.23027pt.
+
+<plots/opt2_eq.png, id=103, 408.52625pt x 448.67625pt>
+File: plots/opt2_eq.png Graphic file (type png)
+ <use plots/opt2_eq.png>
+Package pdftex.def Info: plots/opt2_eq.png used on input line 490.
+(pdftex.def)             Requested size: 199.60895pt x 219.23027pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 457--495
+
+ []
+
+[22 <./plots/returns.png>] [23 <./plots/trg.png>] [24 <./plots/opt_curve.png> <
+./plots/opt_eq.png>] [25 <./plots/final.png>] [26 <./plots/opt2.png> <./plots/o
+pt2_eq.png>] (./thesis.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 1892 strings out of 493089
- 24830 string characters out of 6134842
- 76729 words of memory out of 5000000
- 5382 multiletter control sequences out of 15000+600000
- 11352 words of font info for 43 fonts, out of 8000000 for 9000
+ 4788 strings out of 493089
+ 71737 string characters out of 6134842
+ 138411 words of memory out of 5000000
+ 8182 multiletter control sequences out of 15000+600000
+ 12740 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 27i,21n,24p,815b,259s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2015/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmex10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/a
-msfonts/cmextra/cmex8.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmmi8.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmr10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmr12.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr17.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmr6.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmr8.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cms
-y10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
-6.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.
-pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msa
-m10.pfb>
-Output written on thesis.pdf (18 pages, 224285 bytes).
+ 38i,21n,38p,1316b,355s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
+}</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pf
+b></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb
+></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></u
+sr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr
+/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/l
+ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/loca
+l/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/t
+exlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
+xlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texl
+ive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/te
+xlive/2015/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
+Output written on thesis.pdf (26 pages, 585565 bytes).
 PDF statistics:
- 126 PDF objects out of 1000 (max. 8388607)
- 89 compressed objects within 1 object stream
+ 177 PDF objects out of 1000 (max. 8388607)
+ 106 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 66 words of extra memory for PDF output out of 10000 (max. 10000000)
 

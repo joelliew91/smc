@@ -32,7 +32,8 @@ string data_folder = "data/";
 string output_folder = "output/";
 
 int main(){
-    while(file != 101){
+    while(file != 2281){
+        cout<<file<<endl;
     srand(time(0));
     init();
     init_post();
@@ -50,7 +51,6 @@ int main(){
     int flag = 1;
     while(zeta<1.000001){
         update_para(zeta);
-        
         cout<<count<<","<<zeta<<","<<ESS_k<<",";
         print_acc(acc);
     

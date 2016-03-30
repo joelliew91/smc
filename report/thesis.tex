@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 \usepackage[fleqn]{amsmath}
 \usepackage[document]{ragged2e}
 \usepackage{amsfonts}
@@ -9,7 +9,11 @@
 \usepackage{amsthm}
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
-
+\usepackage{graphicx}
+\graphicspath{ {plots/} }
+\usepackage[margin=3cm]{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
 
 
 \title{Parameter Estimation for Infinite L\'{e}vy Processes via Sequential Monte Carlo}
@@ -331,6 +335,164 @@ $w_{k}(\theta^{i}) = \frac{\pi_{1}(\theta_{1}^{i}|y_{0:n})}{\pi_{0}(\theta_{1}^{
 $W_{k}(\theta^{i}) = \frac{w_{k}^{i}}{\sum_{i=1}^{M} w_{k}^{i}}$
 \end{center}
 If $ESS_{k} \leqslant l$, resample and set $W_{k}(\theta^{i}) = 1/M$. If $k < l$, set $\psi_{k+1}$ for each kernel.
+\section{Empirical Results}
+
+\subsection{Simulation Tests}
+We now provide evidence that this SMC algorithm can accurately estimate the parameters of the SVVG Model. First, using the SVVG Model, we generate 100 paths of 150 days of daily data. The initial value of the volatility is chosen to be 1 and the rest of the latent variables are randomly chosen within their ranges. Then, we run the SMC algorithm over these 100 paths to get us the posterior means of the parameters. The 100 different posterior parameter means are then used to generate the posterior densities of the parameter. The 95\% highest posterior density interval is also calculated.  \\
+\begin{figure}
+\includegraphics[width=\textwidth]{density_plots}
+\caption{95\% Credible Interval is denoted by the blue dotted line. True value of the parameter of the SVVG Model denoted by the red solid line.}
+\end{figure}
+\\
+From Table 1, 3 out of the 7 parameters do not lie within the 95\% credible interval. This could be due to the choice of $\Delta$ in the Euler Discretization which would affect the accuracy of the posterior parameter estimates. For this simulation, $\Delta$ was chosen to be $1/250$ to represent the daily close. One can choose a smaller $\Delta$ at the cost of higher complexity for the latent variables as one has to simulate data points between $(t,t+\Delta t)$. Note that from Table 1 and Figure 1, this SMC algorithm has been able to estimate $\mu$  quite accurately - a feature which we will use for our proposed Trading Strategy.
+\begin{table}
+\centering
+\begin{tabular}{|c c c c c|} 
+ \hline
+ Parameter & True & 0.025 & Median & 0.975 \\
+ \hline
+ $\mu$ & 0.085 & -1.1108 & 0.0595 &1.4978 \\
+ $\gamma$ & 0.0 & -0.0002 & 0.0000 & 0.0002 \\
+ $\sigma_{j}$ & 0.4 & 0.3668 & 0.4293 & 0.4845\\
+ $\sigma_{v}$ & 0.14 & 0.1432 & 0.1693 &0.2508\\
+ $\rho$ & -0.1 & -0.0638 & 0.0100 & 0.1344\\
+ $\kappa$ & 1.6 & 0.0107 & 0.0479 & 2.1061\\
+ $v$ & 0.155& 0.0109 & 1.2968 & 2.0762\\ 
+ \hline
+\end{tabular}
+\caption{95\% Credible Interval and Median}
+\label{table:1}
+\end{table}
+\subsection{The Trading Strategy}
+For this section we will introduce a trading strategy with the help of the SMC Algorithm. We will be using the daily data of S\&P500 from 3/1/2007 to 4/3/2016. Then given a user defined lookback period, $n$, we take a rolling window of $n$ Closes until 4/3/2016. Next, for each window, we perform the SMC algorithm to get us the posterior mean of $\mu$, which is the posterior expectation of the log returns of the instrument. After that, we generate buy/sell signals if $\mu>\mu_{thres}/\mu<-\mu_{thres}$. For the trading strategy, we take $n=30$, $\mu=0$. Also, we assume that we can buy/sell S\&P500. 
+
+\subsubsection{Naive Trading Strategy}
+
+We model the trading strategy with zero transaction costs. The signal generated from the window of Closes is to be applied on the next day's Open. Assuming that we fully invest our capital into this strategy, we get the following equity curve (Fig 3). It is interesting to note that this naive strategy has execellent returns (about 300\% returns) for the first 3 years, before its performance started to stagnate between 250\% to 350\% returns. Out of the 2309 trading days, this strategy longed on 1143 days (49.5\%) and shorted on 1130 days (49.2\%). Note that the first 30 days did not yield any signal as the first window of 30 days was used to ascertain the direction for the next day. Plotting the signal against time (Fig 4), it is observed that the strategy flips direction every 3-5 days. This is a obvious sign that the strategy is trading too often, and perhaps the reason why this Naive strategy does not work after 2010.
+\begin{figure}
+\centering
+\begin{minipage}{0.5\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{ts1}
+  \captionof{figure}{Plot of $\mu$ vs Time}
+  \label{fig:test1}
+\end{minipage}%
+\begin{minipage}{0.5\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{ts2}
+  \captionof{figure}{Plot of Equity vs TIme}
+  \label{fig:test2}
+\end{minipage}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{ts3}
+\caption{Position vs Time}
+\end{figure}
+
+\subsubsection{The Improved Strategy}
+Now that we know that this strategy flip flops too often, we can consider adding a trailing stop for the strategy. Hence, the position remains until the trailing stop gets trigerred. For example, if we are long, the position remains until the low of the day gets below our trailing stop. Otherwise, as we ride the momentum up, the trailing stop increases. Mathematically, at day $t$, $TS_{buy,t} = max\{TS_{buy,t-1},Low_{t-l}\}$, where $l$ is a user defined lookback period and $Low_{t-l}$ denotes the Low of the instrument $l$ days ago. If we get stopped out of our position, we will re-enter the next day, assuming there is a signal to enter. For this toy example, we take $l=3$, transaction cost to be 0.5\% of total value of instrument bought/sold, value of each point of S\&P500 to be \$5 and the risk each trade to be 2\%. Our starting equity will be \$10,000.
+\begin{figure}[ht]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{ts4}
+  \captionof{figure}{Plot of Portfolio vs Trade Number}
+  \label{fig:test3}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{ts5}
+  \captionof{figure}{Plot of Portfolio vs TIme}
+  \label{fig:test4}
+\end{minipage}
+\end{figure}\\
+This improved strategy gives much better returns (500\% over 9 years) as compared to the Naive strategy. However, much can still be done for this strategy. For example, we can take do cross validation to optimise the lookback period for the trailing stop ($l$) and Close window ($n$). Also, we can add in fixed take profit points to see how this strategy performs. Despite the lucrative returns, this strategy is still considered unfavourable due to the long drawdown periods and volatility in its returns.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c| c |c|} 
+ \hline
+ &Long & Short \\
+ \hline
+ Min. Return& -2.52\%& -3.86\%\\
+1st Quantile Return& -1.24\% & -1.64\%\\
+ Median Return& 0.0928\% & 0.0215\% \\
+  Mean Return& 0.945\% & 0.554\% \\
+ 3rd Quantile Return & 0.711\% & 0.474\%\\
+ Max. Return& 121.2\% & 64.9\%\\
+ Success Rate& 56.4\% & 50.6\% \\ 
+ \hline
+\end{tabular}
+\caption{Trade Statistics}
+\label{table:2}
+\end{table}
+\subsubsection{The Optimized Strategy}
+Now we see that this strategy has the potential to become a possible trading strategy, we will try to optimise the paramters using the training set and see what return we can generate over the 9 years. For our training set, we will be using the first 2 years (2007-2009) ie 500 readings. The metric we will be using to validate the strategy is called the CAR/MDD. It is simply the compounded annual return (CAR) divided by the max drawdown (MDD). Intuitively, a higher score means that our equity curve is smoother and therefore a better system.\\
+We now include a form of market filter to prune out unfavourable entries. One logical extension of such is to buy/sell when the market drops/rises given that our posterior mean is positive/negative. Intuitively, this means that there is some sort of 'arbitrage' opportunity as the market has yet to price in the posterior expection of $\mu$. Due to the even distribution as seen in Table 3, we choose a threshold $r_{thres}=0.5$ as the limiting return. Now, we have cut down our potential signals at most 30\% on each direction. Hence, for each $r_{t}>r_{thres}=0.5$ and $r_{t}<-r_{thres}=-0.5$, we give a value of -1 and +1 respectively. We then take the rolling window of $l_{r}=5$ readings and give a buy and sell signal if the sum is greater than $S$ and lesser than $-S$ respectively(For the initial example we let $S=1$, and we will later optimise $S$ nad $l_{r}$). Like the improved trading strategy, we apply the same trailing stop. However, due to the fact we are now trading against the current direction of the market, we let initiate $TS_{buy,t} = min\{Open_{t}-(Hi_{t-1}-Low_{t-1}),Low_{t-l}\}$ and then trail accordingly. Combining the signal from the posterior $\mu$, we get the following equity curve (Fig 8) from the training set. We get a CAR/MDD = 1.960626 (MDD=14.10\%, CAR=27.64\%).
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{returns}
+\caption{Histogram of Returns of Training Set, with red lines indicating $\pm 0.5$}
+\end{figure}
+\begin{table}
+\centering
+\begin{tabular}{|c| c |c|} 
+ \hline
+$r_{t}<-0.5$ & $-0.5\le r_{t} \ge 0.5$ & $r_{t}>0.5$ \\
+ \hline
+30.2\% & 39.6\% & 30.2\% \\
+ \hline
+\end{tabular}
+\caption{Empirical Distribution of Returns}
+\label{table:3}
+\end{table}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{trg}
+\caption{Plot of Equity vs Time (Training Set)}
+\end{figure}
+From the contour plot, we look for the highest CAR/MDD with the flattest surrounding CAR/MDD, reason being that when we test out of sample, we do not want our CAR/MDD to fall too steeply. Hence, we ignore the point at (10,6). Instead, we take the point at (7,2), which gives us a CAR/MDD of 5.903.
+\begin{figure}[ht]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{opt_curve}
+  \captionof{figure}{Optimization Contour Plot}
+  \label{fig:test8}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{opt_eq}
+  \captionof{figure}{Plot of Portfolio vs Time (Opt)}
+  \label{fig:test9}
+\end{minipage}
+\end{figure}\\
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.8]{final}
+\captionof{figure}{Whole Equity Curve}
+\label{fig:test9}
+\end{figure}
+Now, we seek to extend this signal to our test set and see how it unfolds. There is still quite a steep drawdown (Fig 11) of 19.26\%. Given the $l_{r}=7$ and $S=2$, we now choose to optimise the trailing stop loss lookback period ($l$)and the initial hard stop loss factor. The initial hard stop loss factor is the $SL_{fac}$ from $TS_{buy,t} = min\{Open_{t}-(Hi_{t-1}-Low_{t-1})*SL_{fac},Low_{t-l}\}$.Since we are now buying 'falling knives' (or selling rallies), the initial hard stop loss is required as $Low_{t-l}>Open_{t}$, which means that we do not have any reference point to put our trailing stop loss. During the optimization, we ignore points that give us a max drawdown of greater than 10\%. Our max point is at (8,1.4). We now have a very good equity curve with CAR/MDD = 7.45 (max drawdown = 8.75\% and annualised return = 65.29\%).
+\begin{figure}[ht]
+\centering
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{opt2}
+  \captionof{figure}{Optimization Contour Plot 2}
+  \label{fig:test12}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{opt2_eq}
+  \captionof{figure}{Plot of Portfolio vs Time (Opt 2)}
+  \label{fig:test13}
+\end{minipage}
+\end{figure}\\
+
 
 \end{document}
 
