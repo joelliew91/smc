@@ -19,6 +19,7 @@ void update_para(double zeta){
     return ;
 }
 
+//Updates the latent v variable
 void update_lat_v(para* curr,para* kernel,para* acc,int j){
     for(int i=1;i<total;i++){
         double old_post = curr[j].post_lik[i];
@@ -64,7 +65,7 @@ void update_lat_v(para* curr,para* kernel,para* acc,int j){
     return ;
 }
 
-
+//Updates the latent z variable
 void update_lat_z(para* curr,para* kernel,para* acc,int j){
     for(int i=1;i<total;i++){
         double old_post = curr[j].posterior[i];
@@ -91,7 +92,7 @@ void update_lat_z(para* curr,para* kernel,para* acc,int j){
     return ;
 }
 
-
+//Udates sigma_v
 void update_sv(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -132,7 +133,7 @@ void update_sv(para* curr,double sd,para* acc,int i,double zeta){
     return ;
 }
 
-
+//Updates vt
 void update_vp(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -169,7 +170,7 @@ void update_vp(para* curr,double sd,para* acc,int i,double zeta){
     return ;
 }
 
-
+//Updates k
 void update_k(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -205,6 +206,7 @@ void update_k(para* curr,double sd,para* acc,int i,double zeta){
     return ;
 }
 
+//Updates rho
 void update_rho(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -242,6 +244,7 @@ void update_rho(para* curr,double sd,para* acc,int i,double zeta){
     return ;
 }
 
+//Updates sigma_j
 void update_sj(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -279,7 +282,7 @@ void update_sj(para* curr,double sd,para* acc,int i,double zeta){
     return ;
 }
 
-
+//Updates gamma
 void update_gam(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -319,6 +322,7 @@ void update_gam(para* curr,double sd,para* acc,int i,double zeta){
 }
 
 
+//Updates mu
 void update_mu(para* curr,double sd,para* acc,int i,double zeta){
     double* new_post_lik = new double[total];
     double* new_post_z = new double[total];
@@ -333,9 +337,7 @@ void update_mu(para* curr,double sd,para* acc,int i,double zeta){
     double new_post = mcmc_posterior(curr[i],new_post_z,new_post_lik,new_posterior,sum_lik);
     double R = new_post+(zeta-1)*sum_lik[0] - old_post;
     double u = uniform();
-    //cout<<"R:"<<R<<endl;
     if(exp(R)>u){
-        //cout<<"acc ";
         curr[i].sum_post = new_post;
         delete curr[i].post_z;
         delete curr[i].post_lik;

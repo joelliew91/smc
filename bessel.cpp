@@ -14,6 +14,8 @@
 
 using namespace std;
 
+//This is the Bessel function from Numerical Recipes in C
+
 double chebev(double a, double b, double c[], int m, double x)
 {
     //void nrerror(char error_text[]);
@@ -169,26 +171,6 @@ double bessik(double x, double xnu)
     
     return(val);
 }
-/*
-complex<double> besselI(double v, complex<double> z){
-    complex<double> val1(0.0,0.0);
-    
-    if(norm(z)>700.0){
-        complex<double> val2,val3;
-        complex<double> i(0.0,1.0);
-        val3 = pow(z,v)*pow(-pow(z,2),(-2*v+1)/4)/sqrt(2*PII);
-        val2 = exp(-i*(PII*(2*v+1)/4-sqrt(-pow(z,2))))+exp(i*((2*v+1)/4-sqrt(-pow(z,2))));
-        val1 = val3*val2;
-        
-        cout<<z<<" "<<val1<<" "<<val2<<" "<<-i*(PII*(2*v+1)/4-sqrt(-pow(z,2)))<<" "<<i*((2*v+1)/4-sqrt(-pow(z,2)))<<endl;
-    }
-    else{
-        val1 = sp_bessel::besselI(v,z);
-        //cout<<"sp_bessel"<<endl;
-    }
-    return val1;
-}
-*/
 
 
 

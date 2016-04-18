@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//Updates the norm weights
 void update_norm_weights(double zeta,double prev_zeta){
     para* p = head;
     double sum=0;double cum_sum = 0;
@@ -25,6 +26,7 @@ void update_norm_weights(double zeta,double prev_zeta){
     return ;
 }
 
+//Computes ESS for iteration 0
 double ESS_0(){
     para* temp = head;
     double num = 0;
@@ -36,6 +38,7 @@ double ESS_0(){
     return num*num/den;
 }
 
+//function to copy the details of the particle to another
 void copy_particle(para* new_curr,para old,int j){
     new_curr[j].mu = old.mu;
     new_curr[j].gam = old.gam;
@@ -65,6 +68,7 @@ void copy_particle(para* new_curr,para old,int j){
     return ;
 }
 
+//Remove the old set of particles
 void destroy(para* p){
     for(int i=0;i<no_particles;i++){
         delete p[i].z;
@@ -78,6 +82,7 @@ void destroy(para* p){
     return ;
 }
 
+//Resampling algorithm
 void resample(){
 
     para* new_head = new para[no_particles];
@@ -100,6 +105,7 @@ void resample(){
     return ;
 }
 
+//Computes the ESS
 double ESS(double zeta,double prev_zeta){ // to be used after initialization ie iteration>1
     double zeta_diff = zeta - prev_zeta;
     para* temp = head;
@@ -115,6 +121,7 @@ double ESS(double zeta,double prev_zeta){ // to be used after initialization ie 
     return num*num/den;
 }
 
+//finds the new zeta via bisection method
 double find_new_zeta(double prev_zeta,double u_zeta,double l_zeta,double curr_ESS){
     double curr_zeta = 0.5*(u_zeta+l_zeta);
     double new_ESS = ESS(curr_zeta,prev_zeta);

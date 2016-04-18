@@ -7,6 +7,8 @@ void print_kernel(para* ker){
     cout<<ker->mu<<" "<<ker->gam<<" "<<ker->sigma_j<<" "<<ker->rho<<" "<<ker->k<<" "<<ker->v_p<<" "<<ker->sigma_v<<" "<<ker->v[0]<<" "<<ker->z[0]<<endl;
     return ;
 }
+
+//initiate kernel, calculate the mean and sample variance based on the acceptance rate and current sample of posterior estimates
 void set_kernel(){
     
     para* m = new para;
@@ -90,6 +92,7 @@ void set_kernel(){
     return ;
 }
 
+//initiate acceptance rate tracker
 void acc_init(){
     acc->mu = 0;
     acc->gam = 0;
@@ -105,6 +108,7 @@ void acc_init(){
     return ;
 }
 
+//factoring up/down the kernel values if acceptance rate too high/low
 void adapt_kernel(){
     if(kernel->sigma_v<TOL) kernel->sigma_v = 1;
     if(kernel->k<TOL) kernel->k = 1;
@@ -132,7 +136,7 @@ void adapt_kernel(){
     return ;
 }
 
-
+//check the acceptance rate
 double check_mult(double acc_rate){
     double val = 1.0;
     if((acc_rate/no_particles)>0.85)
@@ -145,110 +149,3 @@ double check_mult(double acc_rate){
     }
     return val;
 }
-/*
-
-
-
-
-void acc_end(para* acc){
-    delete acc->v;
-    delete acc->z;
-    delete acc;
-    return ;
-}
-
-para* reset_kernel(para* ker){
-    delete ker->v;
-    delete ker->z;
-    delete ker;
-    return set_kernel();
-}
-
-para* set_kernel(){
-    para* kernel = new para;
-    kernel->mu = 0;
-    kernel->gam = 0;
-    kernel->sigma_j = 0;
-    kernel->rho = 0;
-    kernel->k = 0;
-    kernel->v_p = 0;
-    kernel->sigma_v = 0;
-    kernel->u1 = 0;
-    kernel->u2 = 0;
-    kernel->u3 = 0;
-    kernel->v = new double[total];
-    kernel->z = new double[total];
-    kernel->next = NULL;
-    for(int i=0;i<1;i++){
-        kernel->v[i]=0;
-        kernel->z[i]=0;
-    }
-    para* curr = head;
-    while(curr != NULL){
-        kernel->mu += curr->mu;
-        kernel->gam += curr->gam;
-        kernel->sigma_j += log(curr->sigma_j);
-        kernel->rho += log((1+curr->rho)/(1-curr->rho));
-        kernel->k += curr->k;
-        kernel->v_p += curr->v_p;
-        //kernel->sigma_v += log(curr->sigma_v/(curr->u3 - curr->sigma_v));
-        kernel->sigma_v += curr->sigma_v;
-        //cout<<curr->k - curr->u1<<" "<<curr->v_p - curr->u2<<" "<<(curr->u3 - curr->sigma_v)<<endl;
-        for(int i=0;i<total;i++){
-            kernel->v[0] += log(curr->v[i]);
-            kernel->z[0] += curr->z[i];
-        }
-        curr = curr->next;
-    }
-    
-    curr = head;
-    para* m = kernel;
-    
-    kernel = new para;
-    kernel->mu = 0;
-    kernel->gam = 0;
-    kernel->sigma_j = 0;
-    kernel->rho = 0;
-    kernel->k = 0;
-    kernel->v_p = 0;
-    kernel->sigma_v = 0;
-    kernel->v = new double[total];
-    kernel->z = new double[total];
-    for(int i=0;i<1;i++){
-        kernel->v[i]=0;
-        kernel->z[i]=0;
-    }
-
-    while(curr != NULL){
-        kernel->mu += pow(curr->mu - m->mu/no_particles,2);
-        kernel->gam += pow(curr->gam - m->gam/no_particles,2);
-        kernel->sigma_j += pow(log(curr->sigma_j) - m->sigma_j/no_particles,2);
-        kernel->rho += pow(log((1+curr->rho)/(1-curr->rho)) - m->rho/no_particles,2);
-        kernel->k += pow(curr->k - m->k/no_particles,2);
-        kernel->v_p += pow(curr->v_p - m->v_p/no_particles,2);
-        kernel->sigma_v += pow(curr->sigma_v - m->sigma_v/no_particles,2);
-        
-        for(int i=0;i<total;i++){
-            kernel->v[0] += pow(log(curr->v[i])-m->v[0]/(total*no_particles),2);
-            kernel->z[0] += pow(curr->z[i]-m->z[0]/(total*no_particles),2);
-        }
-        curr = curr->next;
-    }
-    kernel->mu = sqrt(kernel->mu/(no_particles-1));
-    kernel->gam = sqrt(kernel->gam/(no_particles-1));
-    kernel->sigma_j = sqrt(kernel->sigma_j/(no_particles-1));
-    kernel->rho = sqrt(kernel->rho/(no_particles-1));
-    kernel->k = sqrt(kernel->k/(no_particles-1));
-    kernel->v_p = sqrt(kernel->v_p/(no_particles-1));
-    kernel->sigma_v = sqrt(kernel->sigma_v/(no_particles-1));
-    for(int i=0;i<1;i++){
-        kernel->v[i] = sqrt(kernel->v[0]/(total*no_particles-1));
-        kernel->z[i] = sqrt(kernel->z[0]/(total*no_particles-1));
-    }
-    delete m->v;
-    delete m->z;
-    delete m;
-    kernel->next = NULL;
-	return kernel;
-}
-*/

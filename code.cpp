@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 
+
 double TOL = 0.000001;
 double ep = pow(10,-300);
 using namespace std;
@@ -30,6 +31,11 @@ double threshold = 1000.0;
 int file=1;
 string data_folder = "data/";
 string output_folder = "output/";
+
+
+//The codes in this file and SP500 are the same
+//Difference is this one is for retrieving the posterior parameters from the simulated SVVG Model
+//the code in SP500 is for retrieving the posterior parameters for the actual SP500 data
 
 int main(){
     while(file != 101){

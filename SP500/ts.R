@@ -1,86 +1,30 @@
-max_carmdd<-function(data,para){
-    final = 500
-    tpf = seq(0.1,2,by=.1)
-    slf = seq(0.1,2,by=.1)
-    carmdd = matrix(0,nrow=length(tpf),ncol=length(slf))
-    for(i in 1:length(tpf))
-    for(j in 1:length(slf)){
-        sig = get_sig(para=para,from=1,to=final)
-        p = trade_stats1(signal=sig,data=data,sl_fac = slf[j],tp_fac=tpf[i])
-        eq = p$eq
-        eq = eq[2:length(eq)]/eq[1:length(eq)-1]-1
-        t = xts(eq,index(data)[2:500])
-        if(!is.na(coredata(Return.annualized(t)/maxDrawdown(t))))
-        carmdd[i,j] = coredata(Return.annualized(t)/maxDrawdown(t))
-    }
-    
-    
-    return(carmdd)
+library(quantmod)
+library(PerformanceAnalytics)
+library(plotly)
+getSymbols('^GSPC',src='yahoo',from='2007-1-3',to='2016-3-4')
+
+get_graphs<-function(n=2280){
+      mu = c()
+      gam = c()
+      sigma_j = c()
+      sigma_v = c()
+      rho = c()
+      k = c()
+      v = c()
+      for(i in 1:n){
+            dat = read.csv(sprintf('output/output%d.csv',i))
+            mu[i] = sum(dat$mu*dat$norm_w)
+            gam[i] = sum(dat$gam*dat$norm_w)
+            sigma_j[i] = sum(dat$sigma_j*dat$norm_w)
+            rho[i] = sum(dat$rho*dat$norm_w)
+            k[i] = sum(dat$k*dat$norm_w)
+            v[i] = sum(dat$v*dat$norm_w)
+            sigma_v[i] = sum(dat$sigma_v*dat$norm_w)
+      }
+      return(list(mu=mu,gam=gam,sigma_j=sigma_j,sigma_v = sigma_v,rho=rho,k=k,v=v))
 }
 
-max_carmdd_vol<-function(data,para){
-    final = 500
-    lb_vol = seq(1,20,by=1)
-    roll = seq(1,15,by=1)
-    carmdd = matrix(0,nrow=length(lb_vol),ncol=length(roll))
-    for(i in 1:length(lb_vol))
-    for(j in 1:length(roll)){
-        sig = get_sig_vol(para=para,data=data,vol_lb=lb_vol[i],rolling_vol=roll[j],from=1,to=final)
-        p = trade_stats1(signal=sig,data=data)
-        eq = p$eq
-        eq = eq[2:length(eq)]/eq[1:length(eq)-1]-1
-        t = xts(eq,index(data)[2:500])
-        if(!is.na(coredata(Return.annualized(t)/maxDrawdown(t))))
-        carmdd[i,j] = Return.annualized(t)/maxDrawdown(t)
-    }
-    
-    
-    
-    return(carmdd)
-}
-get_sig<-function(para,threshold=0,from=1,to=NA){
-    mu = c(rep(0,29),para$mu)
-    n = length(mu)
-    dir_mu = rep(0,n)
-    dir_mu[mu>threshold] = 1
-    dir_mu[mu<(-threshold)] = -1
-    bb = BBands(Cl(GSPC),maType='EMA',n=10,sd=2)
-    bb_sig = rep(0,length(Cl(GSPC)))
-    bb_sig[bb$mavg<Cl(GSPC)] = -1
-    bb_sig[bb$mavg>Cl(GSPC)] = 1
-    dir = rep(0,length(Cl(GSPC)))
-    dir[bb_sig+dir_mu==2] = 1
-    dir[bb_sig+dir_mu==-2] = -1
-    dir = c(0,Lag(dir)[-1])
-    if(!is.na(to))
-        dir = dir[from:to]
-    return(dir)
-}
-
-get_sig_vol<-function(para,threshold=0,data,vol_lb=5,vol_filter=0.5,rolling_vol=1,from=1,to=NA){
-    mu = c(rep(0,29),para$mu)
-    n = length(mu)
-    sig = rep(0,n)
-    ret = ((Cl(data) - Op(data))/Op(data)*100)
-    vol = rep(0,n)
-    vol[ret>vol_filter] = 1
-    vol[ret<(-vol_filter)]=-1
-    sum_vol=filter(vol,rep(1,vol_lb), sides=1)
-    sig_vol = rep(0,n)
-    sig_vol[sum_vol>=rolling_vol] = -1
-    sig_vol[sum_vol<=(-rolling_vol)] = 1
-    dir_mu = rep(0,n)
-    dir_mu[mu>threshold] = 1
-    dir_mu[mu<(-threshold)] = -1
-    sig[(dir_mu+sig_vol)==2] = 1
-    sig[(dir_mu+sig_vol)==-2] = -1
-    sig = c(0,Lag(sig)[-1])
-    if(!is.na(to))
-    sig = sig[from:to]
-    return(sig)
-}
-
-get_trans<-function(signal,data,cost=0.005){
+get_trans<-function(signal,data,cost=0.001){
       trans=rep(1,length(signal))
       trans[signal==0] = 0
       for(i in 2:length(signal)){
@@ -90,52 +34,286 @@ get_trans<-function(signal,data,cost=0.005){
       }
       return(cost*trans)
 }
-trade_stats_b<-function(signal,data,starting=10000,transcost=0.005,delta=0.02,point = 5,sl_fac=1.0,tp_fac=1.0){
-    curr_pos = 0
-    lots = 1
-    curr_eq = starting
-    dir = c()
-    before=c()
-    after=c()
-    profit=c()
-    lot=c()
-    entry=c()
-    sl=c()
-    length=c()
-    pc_profit=c()
-    tp=c()
-    sl_pt=c()
-    eq=c()
-    curr = 1
-    flag = 1
-    for(i in 1:length(signal)){
-          if(curr_pos==0){
-                if(signal[i]==-1){
-                      curr_pos = 1
-                      lot[curr] = 1
-                      curr_eq = curr_eq - coredata(transcost*Op(data)[i]*lot[curr])
-                      dir[curr] = 1
-                      before[curr] = curr_eq
-                      entry[curr] = Op(data)[i]
-                      length[curr] = 1
-                }
 
-          }
-          else{
-                length[curr] = length[curr] + 1
-                if(signal[i] !=1){
-                      sl[curr] = Op(data)[i]
-                      profit[curr] = (sl[curr] - entry[curr])*dir[curr]*lot[curr]
-                      after[curr] = profit[curr] + before[curr]
-                      pc_profit[curr] = (sl[curr] - entry[curr])/entry[curr]
-                      eq[curr] = after[curr]
-                  
-                      curr = curr+1
-                      curr_pos=0
-                }
-          }
-    }
-    t_s = list(dir=dir,before=before,after=after,profit=profit,lot=lot,entry=entry,sl=sl,length=length,pc_profit=pc_profit,tp=tp,sl_pt=sl_pt,eq=eq)
+weighted_portfolio<-function(s1,s2,s3,s4,from=1,to=100){
+      w1 = seq(0,1,by=0.1)
+      w2 = seq(0,1,by=0.1)
+      w3 = seq(0,1,by=0.1)
+      output = c()
+      for(i in w1)
+            for(j in w2)
+                  for(k in w3){
+                        w = 1-i-j-k
+                        if(w>0){
+                              comb = i*diff(s1)+j*diff(s2)+k*diff(s3)+w*diff(s4)
+                              comb[1] = 0
+                              stat1 = Return.annualized(comb[from:to])
+                              stat = stat1/maxDrawdown(comb[from:to])
+                              output = rbind(output,c(i,j,k,w,stat,stat1)) 
+                        }
 
-    return(t_s)
+                  }
+      return(output)
 }
+rolling_opt<-function(s1,s2,s3,s4,n=50){
+      time = seq(100,2309-n,by=n)
+      k = round(100/n)
+      p = (0.6*diff(s1) + 0.1*diff(s2) +0*diff(s3)+0.3*diff(s4))[101:200]
+      weights = c(0.6,0.1,0,0.3)
+      for(i in (k+1):(length(time))){
+            opt_from = time[i-k]
+            opt_to = time[i]
+            w = weighted_portfolio(s1,s2,s3,s4,from=opt_from,to=opt_to)
+            w = w[order(w[,5],w[,6],decreasing=T),]
+            if(is.na(w[1,5])){
+                  w1 = 0.25
+                  w2 = 0.25
+                  w3 = 0.25
+                  w4 = 0.25
+            }
+            else{
+                  w1 = w[1,1]
+                  w2 = w[1,2]
+                  w3 = w[1,3]
+                  w4 = w[1,4]
+            }
+            weights = rbind(weights,c(w1,w2,w3,w4))
+            temp = (w1*diff(s1) + w2*diff(s2) +w3*diff(s3)+w4*diff(s4))
+            final = min(opt_to+n,2309)
+            p = rbind(p,temp[(opt_to+1):final,])
+            
+      }
+            
+      return(list(eq=cumsum(p),w=weights))
+}
+get_sig_sma_opt<-function(para,data,threshold=0,from=1,to=500){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      thres = seq(0,1,by=0.1)
+      dy = OpCl(data)
+      n.grid = seq(3,60)
+      mat_b = matrix(0,nrow = length(thres),ncol=length(n.grid))
+      mat_s = matrix(0,nrow = length(thres),ncol=length(n.grid))
+      for(j in 1:length(thres))
+            for(i in 1:length(n.grid)){
+                  dir_mu_b = rep(0,n)
+                  dir_mu_s = rep(0,n)
+                  dir_mu_b[mu>thres[j]] = 1
+                  dir_mu_s[mu<(-thres[j])] = -1
+                  dir_mu_b = Lag(dir_mu_b,1)
+                  dir_mu_s = Lag(dir_mu_s,1)
+                  dir_mu_b[1] = 0
+                  dir_mu_s[1] = 0
+                  sma = SMA(Op(data),n=n.grid[i])
+                  sma_dir_b = rep(0,n)
+                  sma_dir_s = rep(0,n)
+                  sma_dir_b[sma<Op(data)] = 1
+                  sma_dir_s[sma>Op(data)] = -1
+                  call_b = rep(0,n)
+                  call_s = rep(0,n)
+                  call_b[(dir_mu_b+sma_dir_b)>1]=1
+                  call_s[(dir_mu_s+sma_dir_s)<(-1)]=-1
+                  trans_b = get_trans(call_b)
+                  trans_s = get_trans(call_s)
+                  eq = cbind(cumsum(call_b*dy-trans_b),cumsum(call_s*dy-trans_s),cumsum(call_b*dy)+cumsum(call_s*dy)-trans_b-trans_s,cumsum(dy))[from:to]
+                  names(eq) = c('strat_buy','strat_sell','port','bnh')
+                  stat = apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown)
+                  mat_b[j,i] = stat[1]
+                  mat_s[j,i] = stat[2]
+      }
+      return(list(buy=mat_b,sell=mat_s))
+}
+get_sig_sma<-function(para,data,threshold=0,from=1,to=NA,lb=9){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      dir_mu_b = rep(0,n)
+      dir_mu_s = rep(0,n)
+      dir_mu_b[mu>threshold] = 1
+      dir_mu_s[mu<(-threshold)] = -1
+      dir_mu_b = Lag(dir_mu_b,1)
+      dir_mu_s = Lag(dir_mu_s,1)
+      dir_mu_b[1] = 0
+      dir_mu_s[1] = 0
+      sma = SMA(Op(data),n=lb)
+      sma_dir_b = rep(0,n)
+      sma_dir_s = rep(0,n)
+      sma_dir_b[sma<Op(data)] = 1
+      sma_dir_s[sma>Op(data)] = -1
+      call_b = rep(0,n)
+      call_s = rep(0,n)
+      call_b[(dir_mu_b+sma_dir_b)>1]=1
+      call_s[(dir_mu_s+sma_dir_s)<(-1)]=-1
+      eq = cbind(cumsum(call_b*dy),cumsum(call_s*dy),cumsum(call_b*dy)+cumsum(call_s*dy),cumsum(dy))[from:to]
+      names(eq) = c('strat_buy','strat_sell','port','bnh')
+      plot(as.zoo(eq),plot.type='single',col=c('blue','red','black','magenta'),main='Strat Returns vs BnH Returns',ylab='Cumulative Eq',xlab='Time')
+      legend('topleft',col=c('blue','red','black','magenta'),lwd=c(2,2,2),lty=c(1,1,1),c('Buy','Sell','Comb','BnH'))
+      print(apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown))
+      return(eq)
+}
+
+get_sig_ema_opt<-function(para,data,threshold=0,from=1,to=500){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      thres = seq(0,1,by=0.1)
+      dy = OpCl(data)
+      n.grid = seq(3,30)
+      mat_b = matrix(0,nrow = length(thres),ncol=length(n.grid))
+      mat_s = matrix(0,nrow = length(thres),ncol=length(n.grid))
+      for(j in 1:length(thres))
+            for(i in 1:length(n.grid)){
+                  dir_mu_b = rep(0,n)
+                  dir_mu_s = rep(0,n)
+                  dir_mu_b[mu>thres[j]] = 1
+                  dir_mu_s[mu<(-thres[j])] = -1
+                  dir_mu_b = Lag(dir_mu_b,1)
+                  dir_mu_s = Lag(dir_mu_s,1)
+                  dir_mu_b[1] = 0
+                  dir_mu_s[1] = 0
+                  sma = EMA(Op(data),n=n.grid[i])
+                  sma_dir_b = rep(0,n)
+                  sma_dir_s = rep(0,n)
+                  sma_dir_b[sma>Op(data)] = 1
+                  sma_dir_s[sma<Op(data)] = -1
+                  call_b = rep(0,n)
+                  call_s = rep(0,n)
+                  call_b[(dir_mu_b+sma_dir_b)>1]=1
+                  call_s[(dir_mu_s+sma_dir_s)<(-1)]=-1
+                  eq = cbind(cumsum(call_b*dy),cumsum(call_s*dy),cumsum(call_b*dy)+cumsum(call_s*dy),cumsum(dy))[from:to]
+                  names(eq) = c('strat_buy','strat_sell','port','bnh')
+                  stats = apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown)
+                  mat_b[j,i] = stats[1]
+                  mat_s[j,i] = stats[2]
+            }
+      return(list(buy=mat_b,sell=mat_s))
+}
+
+
+get_sig_ema<-function(para,data,threshold=0,from=1,to=NA,lb=5){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      dir_mu_b = rep(0,n)
+      dir_mu_s = rep(0,n)
+      dir_mu_b[mu>threshold] = 1
+      dir_mu_s[mu<(-threshold)] = -1
+      dir_mu_b = Lag(dir_mu_b,1)
+      dir_mu_s = Lag(dir_mu_s,1)
+      dir_mu_b[1] = 0
+      dir_mu_s[1] = 0
+      dy = OpCl(data)
+      sma = EMA(Op(data),n=lb)
+      sma_dir_b = rep(0,n)
+      sma_dir_s = rep(0,n)
+      sma_dir_b[sma>Op(data)] = 1
+      sma_dir_s[sma<Op(data)] = -1
+      call_b = rep(0,n)
+      call_s = rep(0,n)
+      call_b[(dir_mu_b+sma_dir_b)>1]=1
+      call_s[(dir_mu_s+sma_dir_s)<(-1)]=-1
+      eq = cbind(cumsum(call_b*dy),cumsum(call_s*dy),cumsum(call_b*dy)+cumsum(call_s*dy),cumsum(dy))[from:to]
+      names(eq) = c('strat_buy','strat_sell','port','bnh')
+      plot(as.zoo(eq),plot.type='single',col=c('red','blue','black','magenta'),main='Strat Returns vs BnH Returns',ylab='Cumulative Eq',xlab='Time')
+      legend('topleft',col=c('red','blue','black','magenta'),lwd=c(2,2,2,2),lty=c(1,1,1,1),c('Strat_buy','Strat_sell','Comb','BnH'))
+      print(apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown))
+      return(eq)
+}
+get_sig_mo_opt<-function(para,data,lb_y = 4,from=1,to=500){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      thres = seq(0,1,by=0.1)
+      y_thres = seq(0,0.05,by=0.01)
+      score = seq(0,lb_y)
+      dy = OpCl(data)
+      output =c()
+      for(i in thres)
+            for(j in y_thres)
+                  for(w in score){
+                        dir_mu_b = rep(0,n)
+                        dir_mu_s = rep(0,n)
+                        dir_mu_b[mu>i] = 1
+                        dir_mu_s[mu<(-i)] = -1
+                        dir_mu_b = Lag(dir_mu_b,1)
+                        dir_mu_s = Lag(dir_mu_s,1)
+                        dir_mu_b[1] = 0
+                        dir_mu_s[1] = 0
+                        dir = rep(0,n)
+                        dir[dy>j] = 1
+                        dir[dy<(-j)] = -1
+                        dir = Lag(dir,1)
+                        dir[1] = 0
+                        dir = filter(dir,rep(1,lb_y), sides=1)
+                        call_b = rep(0,n)
+                        call_s = rep(0,n)
+                        call_b[(dir_mu_b+dir)>w] = 1
+                        call_s[(dir_mu_s+dir)<(-w)] = -1
+                        buy = call_b*dy
+                        sell = call_s*dy
+                        comb = cbind(buy,sell,buy+sell)
+                        temp = apply(apply(comb,2,diff),2,Return.annualized)/apply(apply(comb,2,diff),2,maxDrawdown)
+                        output = rbind(output,c(i,j,w,temp))
+                              
+                        
+                  }
+      
+      
+      return(output)
+}
+get_sig_mo<-function(para,data,threshold=0,y_thres=0,lb_y=3,score=2,from=1,to=NA){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      dir_mu_b = rep(0,n)
+      dir_mu_s = rep(0,n)
+      dir_mu_b[mu>threshold] = 1
+      dir_mu_s[mu<(-threshold)] = -1
+      dir_mu_b = Lag(dir_mu_b,1)
+      dir_mu_s = Lag(dir_mu_s,1)
+      dir_mu_b[1] = 0
+      dir_mu_s[1] = 0
+      dy = OpCl(data)
+      dir = rep(0,n)
+      dir[dy>y_thres] = 1
+      dir[dy<(-y_thres)] = -1
+      dir = Lag(dir,1)
+      dir[1] = 0
+      dir = filter(dir,rep(1,lb_y), sides=1)
+      call_b = rep(0,n)
+      call_s = rep(0,n)
+      call_b[(dir_mu_b+dir)>score]=1
+      call_s[(dir_mu_s+dir)<(-score)]=-1
+      eq = cbind(cumsum(call_b*dy),cumsum(call_s*dy),cumsum(call_b*dy+call_s*dy),cumsum(dy))[from:to]
+      names(eq) = c('strat_buy','strat_sell','port','bnh')
+      plot(as.zoo(eq),plot.type='single',col=c('red','blue','black','magenta'),main='Strat Returns vs BnH Returns',ylab='Cumulative Eq',xlab='Time')
+      legend('topleft',col=c('red','blue','black','magenta'),lwd=c(2,2,2,2),lty=c(1,1,1,1),c('Strat_buy','Strat_sell','Comb','BnH'))
+      print(apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown))
+      return(eq)
+}
+
+get_sig_naive<-function(para,data,threshold=0,from=1,to=NA){
+      mu = c(rep(0,29),para$mu)
+      if(is.na(to)) to = 2309
+      n = length(mu)
+      dir_mu_b = rep(0,n)
+      dir_mu_s = rep(0,n)
+      dir_mu_b[mu>threshold] = 1
+      dir_mu_s[mu<(-threshold)] = -1
+      dy = OpCl(data)
+      dir_mu_b = Lag(dir_mu_b,1)
+      dir_mu_s = Lag(dir_mu_s,1)
+      dir_mu_b[1] = 0
+      dir_mu_s[1] = 0
+      trans_b = get_trans(call_b)
+      trans_s = get_trans(call_s)
+      eq = cbind(cumsum(call_b*dy-trans_b),cumsum(call_s*dy-trans_s),cumsum(call_b*dy)+cumsum(call_s*dy)-trans_b-trans_s,cumsum(dy))[from:to]
+      names(eq) = c('strat_buy','strat_sell','port','bnh')
+      plot(as.zoo(eq),plot.type='single',col=c('red','blue','black','magenta'),main='Strat Returns vs BnH Returns',ylab='Cumulative Eq',xlab='Time')
+      legend('topleft',col=c('red','blue','black','magenta'),lwd=c(2,2,2,2),lty=c(1,1,1,1),c('Strat_buy','Strat_sell','Comb','BnH'))
+      print(apply(apply(eq,2,diff),2,Return.annualized)/apply(apply(eq,2,diff),2,maxDrawdown))
+      return(eq)
+}
+
+

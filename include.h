@@ -40,41 +40,25 @@ extern int no_particles;
 extern double ep;
 extern double TOL;
 extern int file;
+
 //init.cpp
 void print_acc(para* curr);
 void reset();
-//double min();
-//double max();
 void init();
 double normal();
 double uniform();
 void print();
-//void print_extra();
 void init_post();
-//void get_val(para* p);
-//
+
 
 //posterior.cpp
 void update_all();
-//void print_part_post();
-//void update_untempered_lik();
 double lik(double zeta,para p);
 double mcmc_posterior(para p,double* lat_z,double* lat_lik,double* lat_posterior,double* sum_lik);
 double prior(para p);
-//double posterior(double zeta,para* p);
-//double post_no_prior(double zeta,double z,double vt,double vu,double yt,double yu,para* p);
 double likelihood(double zeta,double z,double vt,double vu,double yt,double yu,para p);
 double variance_gamma(double z,para p);
-//void print_mat(double** mat, int r,int c);
-//double determinant(double** mat);
-//void inverse(double** inv,double** mat);
-//void swap(double* val1, double* val2);
-//void multiply(double** res,double** mat1,double** mat2,int r1,int c1,int r2,int c2);
-//double mult(double norm_y,double norm_v,double** mat);
-//double transition(double vt,double vu,para* p);
-//double aux_g(double v,double w,double vt,double vu,para* p);
-//std::complex<double> phi(double v,double w,double vt,double vu,para* p);
-//
+
 //resample_update.cpp
 double ESS_0();
 double ESS(double zeta,double prev_zeta);
@@ -83,17 +67,15 @@ void update_norm_weights(double zeta,double prev_zeta);
 void resample();
 void copy_particle(para* new_curr,para old,int j);
 void destroy(para* p);
-//void resample_tester(para* p,double zeta,double prev_zeta);
-//
+
 //kernel.cpp
 void print_kernel(para* ker);
 void set_kernel();
 void acc_init();
-//void acc_end(para* acc);
+
 double check_mult(double acc_rate);
 void adapt_kernel();
-//para* reset_kernel(para* ker);
-//
+
 //update_para.cpp
 void update_para(double zeta);
 void update_mu(para* curr,double sd,para* acc,int i,double zeta);
@@ -106,13 +88,11 @@ void update_sv(para* curr,double sd,para* acc,int i,double zeta);
 void update_lat_z(para* curr,para* kernel,para* acc,int j);
 void update_lat_v(para* curr,para* kernel,para* acc,int j);
 
-//
 //bessel.cpp
 double chebev(double a, double b, double c[], int m, double x);
 void beschb(double x, double *gam1, double *gam2, double *gampl, double *gammi);
 double bessik(double x, double xnu);
-//std::complex<double> besselI(double v, std::complex<double> z);
-//
+
 
 
 
